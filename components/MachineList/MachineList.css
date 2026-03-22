@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@layer components {
+  .mobile-container {
+    @apply relative w-full;
+  }
+  
+  .mobile-dropdown-button {
+    @apply w-full p-3 bg-white rounded-lg text-[#2b5a7a] font-semibold text-left flex justify-between items-center;
+  }
+  
+  .mobile-dropdown-menu {
+    @apply absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg max-h-[400px] overflow-y-auto z-10;
+  }
+  
+  .desktop-sidebar {
+    @apply col-start-1 row-span-2 bg-white rounded-[20px] p-5 flex flex-col overflow-y-auto w-[200px] shrink-0;
+  }
+  
+  .machine-group {
+    @apply flex flex-col mb-0;
+  }
+  
+  .group-header {
+    @apply w-full p-[10px] bg-[#2b5a7a] text-white font-semibold text-center text-sm;
+  }
+  
+  .group-header.first-group {
+    @apply rounded-t-[8px];
+  }
+  
+  .group-header.last-group {
+    @apply rounded-b-[8px];
+  }
+  
+  .machine-button {
+    @apply w-full p-2 text-center text-sm font-medium transition-all duration-200 rounded-none;
+  }
+  
+  .machine-button.active {
+    @apply bg-[#3ba99c] text-white;
+  }
+  
+  .machine-button.inactive {
+    @apply bg-[#dce7ea] text-[#486887] hover:bg-[#e8f4f8];
+  }
+  
+  .machine-button.last-machine {
+    @apply rounded-b-[8px];
+  }
+}

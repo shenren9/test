@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+.machine-item {
+    @apply bg-[#1a3a5f] text-white p-3 rounded-xl flex justify-between items-center relative overflow-hidden transition-all;
+    @apply no-underline cursor-pointer hover:brightness-110;
+}
+
+.machine-name {
+    @apply font-bold text-sm;
+}
+
+.machine-zone {
+    @apply text-[10px] opacity-60;
+}
+
+.status-badge {
+    @apply text-[10px] px-2 py-0.5 rounded font-bold uppercase;
+}
+
+.status-bg-green {
+    @apply bg-green-500 text-white;
+}
+.status-bg-yellow {
+    @apply bg-yellow-500 text-white;
+}
+.status-bg-red {
+    @apply bg-red-500 text-white;
+}
+
+.status-indicator {
+    @apply absolute top-1 right-1 w-2 h-2 rounded-full;
+}
+
+.status-green {
+    @apply bg-green-400;
+}
+.status-yellow {
+    @apply bg-yellow-400;
+}
+.status-red {
+    @apply bg-red-400;
+}

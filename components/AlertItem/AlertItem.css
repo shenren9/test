@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+.alert-card {
+  @apply relative p-4 mb-3 rounded-lg border border-gray-100 border-l-4 transition-all shadow-sm;
+}
+
+/* Severity Theme Mapping */
+.alert-high { @apply bg-red-100 border-l-red-500; }
+.alert-medium { @apply bg-yellow-100 border-l-yellow-500; }
+.alert-spike { @apply bg-slate-100 border-l-slate-500; }
+
+.alert-header {
+  @apply flex justify-between items-start mb-3 gap-3;
+}
+
+.header-left {
+  @apply flex flex-col min-w-0;
+}
+
+.machine-name {
+  @apply text-sm font-bold truncate;
+}
+
+.prediction-age {
+  @apply text-xs truncate;
+}
+
+.risk-label {
+  @apply text-[10px] font-semibold uppercase tracking-wider mt-0.5;
+}
+
+.alert-high .risk-label { @apply text-red-600; }
+.alert-medium .risk-label { @apply text-yellow-700; }
+.alert-spike .risk-label { @apply text-slate-500; }
+
+/* Badges */
+.severity-badge {
+  @apply text-[10.5px] font-bold px-2 py-0.5 rounded text-white uppercase;
+}
+
+.tag-high { @apply bg-red-500; }
+.tag-medium { @apply bg-yellow-500; }
+.tag-spike { @apply bg-slate-500; }
+
+/* Content */
+.fault-text {
+  @apply text-sm leading-relaxed mb-4 min-h-8;
+}
+
+/* Progress Section */
+.progress-label {
+  @apply text-[10px] font-bold uppercase;
+}
+
+.stat-meta {
+  @apply flex items-center gap-2;
+}
+
+.prediction-text {
+  @apply text-[12px] font-bold;
+}
+
+.percentage-value {
+  @apply text-xs font-black text-gray-900;
+}
+
+.stats-row {
+  @apply flex justify-between items-center mb-1.5;
+}
+
+.progress-track {
+  @apply h-1.5 w-full bg-gray-300/70 rounded-full overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full transition-all duration-500 ease-out rounded-full;
+}
+
+.alert-high .progress-fill { @apply bg-red-500; }
+.alert-medium .progress-fill { @apply bg-yellow-500; }
+.alert-spike .progress-fill { @apply bg-slate-500; }

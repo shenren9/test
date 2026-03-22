@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+html,
+body {
+    overscroll-behavior: none;
+    background: linear-gradient(to right, #7db4d6, #35699f);
+    color: #000000;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    overflow-y: hidden;
+}
+
+header {
+    @apply w-full h-[12vh];
+}
+
+main {
+    height: 87vh;
+    padding-bottom: 2rem;
+    box-sizing: border-box;
+}
+
+@media (max-width: 670px) {
+    html, body {
+        height: auto;
+        min-height: 100dvh;
+        overflow-y: auto;
+        padding-bottom: 2rem;
+        overscroll-behavior: auto;
+    }
+    
+    header {
+        @apply h-[10dvh];
+    }
+    
+    main {
+        height: auto;
+        min-height: 90dvh;
+        overflow: visible;
+        padding-bottom: 3rem;
+    }
+}
+
+* {
+    scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+    display: none;
+}
