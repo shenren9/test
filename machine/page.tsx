@@ -29,7 +29,7 @@ export default async function MachinePage({
       sensor = metricsName[0];
   }
 
-  let initialMachineId = machines?.[0]?.name || "";
+  let initialMachineId = machines?.find(m => m.group_id === groups?.[0]?.id)?.name || machines?.[0]?.name || "";
   if (queriedId) {
     initialMachineId = queriedId;
   }

@@ -32,3 +32,15 @@ export interface Prediction {
   completed: boolean;
   verification_status: boolean | null;
 }
+
+export interface Props {
+  groups: Group[];
+  machines: Machine[];
+  initialMachineId: string;
+  initialChartData: MachineChartData[];
+  initialSensor: string;
+  initialTimeRange: number;
+  topPrediction: Prediction | null; 
+  predictions: Prediction[];
+  metricsName: string[];
+}

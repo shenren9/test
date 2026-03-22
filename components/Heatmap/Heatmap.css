@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+.common-issues-heatmap {
+    @apply col-span-2 bg-white p-6 rounded-2xl flex flex-col gap-4;
+}
+
+.heatmap-header h2 {
+    @apply text-xl font-bold text-[#35699f] m-0;
+}
+
+.heatmap-grid-container {
+    @apply flex-1 overflow-hidden py-2 flex flex-col justify-center;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    grid-template-rows: repeat(7, max-content);
+    grid-auto-flow: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.heatmap-cell {
+    @apply rounded-sm aspect-square transition-all duration-200 hover:ring-2 hover:ring-offset-1 hover:ring-gray-300;
+}
+
+@media (max-width: 670px) {
+    .common-issues-heatmap {
+        @apply w-full;
+    }
+
+    .heatmap-grid-container {
+        @apply overflow-x-auto flex-none block;
+        height: auto;
+        padding-bottom: 8px;
+    }
+
+    .heatmap-grid {
+        min-width: 600px;
+        height: auto;
+    }
+}

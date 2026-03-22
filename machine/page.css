@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 .machine-dashboard {
     @apply w-full pt-4 px-4 flex flex-col overflow-hidden;
 }
@@ -8,31 +7,6 @@
 .machine-dashboard .main-container {
     @apply flex-1 bg-white/90 rounded-[40px] flex min-h-0;
     backdrop-filter: blur(10px);
-}
-
-.common-issues-heatmap {
-    @apply col-span-2 bg-white p-6 rounded-2xl flex flex-col gap-4;
-}
-
-.heatmap-header h2 {
-    @apply text-xl font-bold text-[#35699f] m-0;
-}
-
-.heatmap-grid-container {
-    @apply flex-1 overflow-hidden py-2 flex flex-col justify-center;
-}
-
-.heatmap-grid {
-    display: grid;
-    grid-template-columns: repeat(13, 1fr);
-    grid-template-rows: repeat(7, max-content);
-    grid-auto-flow: column;
-    gap: 4px;
-    width: 100%;
-}
-
-.heatmap-cell {
-    @apply rounded-sm aspect-square transition-all duration-200 hover:ring-2 hover:ring-offset-1 hover:ring-gray-300;
 }
 
 .machine-sidebar {
@@ -203,15 +177,13 @@
         @apply p-4 gap-6 h-auto overflow-visible;
     }
 
-    
     .content-top-row, 
     .content-bottom-row {
         @apply flex flex-col gap-6;
     }
 
     .live-data-widget, 
-    .stats-column, 
-    .common-issues-heatmap {
+    .stats-column {
         @apply w-full;
     }
 
@@ -225,17 +197,6 @@
 
     .machine-header-title {
         @apply hidden;
-    }
-
-    .heatmap-grid-container {
-        @apply overflow-x-auto flex-none block;
-        height: auto;
-        padding-bottom: 8px;
-    }
-
-    .heatmap-grid {
-        min-width: 600px;
-        height: auto;
     }
 
     .widget {
