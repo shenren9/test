@@ -57,14 +57,7 @@ export default function MachinePageClient({
     }
     return data;
   }, [machinePreds, hydrated]);
-
-  const prediction = useMemo(() => {
-    if (!hydrated && topPrediction) return topPrediction;
-    return machinePreds
-      .filter(p => new Date(p.fail_timestamp) > new Date())
-      .sort((a, b) => b.certainty - a.certainty)[0] || null;
-  }, [machinePreds, topPrediction, hydrated]);
-
+  
   const formattedChartData = useMemo(() => {
     if (!hydrated) return []; 
     return initialChartData.map(series => ({
@@ -152,13 +145,13 @@ export default function MachinePageClient({
               <div className="prediction-grid">
                 <div className="prediction-box purple">
                   <span className="label">Predicted Failure</span>
-                  {prediction ? (
+                  {topPrediction ? (
                     <>
                       <span className="value">
-                        {hydrated ? Math.ceil((new Date(prediction.fail_timestamp).getTime() - Date.now()) / 86400000) : '-'}d
+                        {hydrated ? Math.ceil((new Date(topPrediction.fail_timestamp).getTime() - Date.now()) / 86400000) : '-'}d
                       </span>
-                      <span className="sub-label">{prediction.description}</span>
-                      <span className="sub-label">{Math.round(prediction.certainty * 100)}% confidence</span>
+                      <span className="sub-label">{topPrediction.description}</span>
+                      <span className="sub-label">{Math.round(topPrediction.certainty * 100)}% confidence</span>
                     </>
                   ) : (
                     <>
