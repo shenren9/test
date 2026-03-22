@@ -104,7 +104,7 @@
 }
 
 .prediction-grid {
-    @apply grid grid-cols-2 gap-3 flex-1;
+    @apply grid grid-cols-1 gap-3 flex-1;
     grid-auto-rows: 1fr;
 }
 

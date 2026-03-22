@@ -217,14 +217,6 @@ export default function MachinePageClient({ groups, machines, initialMachineId, 
                     </>
                   )}
                 </div>
-                <div className="prediction-box light-gray issues-box">
-                  <span className="label">Top 3 Historical Breakdowns</span>
-                  <ol>
-                    <li>1. Leakage - 65%</li>
-                    <li>2. Motor Breakdown - 45%</li>
-                    <li>3. Heat Damage - 30%</li>
-                  </ol>
-                </div>
               </div>
             </div>
           </div>
