@@ -5,7 +5,7 @@
     @apply w-full pt-4 px-4 flex flex-col overflow-hidden;
 }
 
-.main-container {
+.machine-dashboard .main-container {
     @apply flex-1 bg-white/90 rounded-[40px] flex min-h-0;
     backdrop-filter: blur(10px);
 }
@@ -95,7 +95,7 @@
     @apply text-3xl font-bold text-[#35699f] capitalize mb-2;
 }
 
-.widget {
+.machine-dashboard .widget {
     @apply bg-white rounded-2xl p-6;
 }
 
@@ -149,15 +149,15 @@
     @apply bg-gray-200 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-300 transition;
 }
 
-table {
+.machine-dashboard table {
     @apply w-full text-left text-xs;
 }
 
-th { 
+.machine-dashboard th { 
     @apply text-gray-400 font-medium pb-2 px-4; 
 }
 
-td { 
+.machine-dashboard td { 
     @apply py-3 px-4 border-t border-gray-100; 
 }
 
@@ -174,7 +174,7 @@ td {
         overflow-y: auto;
     }
 
-    .dashboard {
+    .machine-dashboard {
         @apply p-2 h-auto pb-24;
     }
 

@@ -1,37 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { LineChart } from "../components/LineChart";
 import { MachineList } from "../components/MachineList/MachineList";
-import { MachineChartData } from "./page";
-import { useRouter } from "next/navigation";
-
+import { Machine, Group, Prediction, MachineChartData } from "./types";
+import { getMachineData } from "./actions"; // Imported directly
 import "./page.css";
-
-interface Machine {
-  id: string;
-  name: string;
-  group_name: string;
-  group_id: string;
-}
-
-interface Group {
-  name: string;
-  id: string;
-}
-
-interface Prediction {
-  id: number;
-  kind: string;
-  certainty: number;
-  fail_timestamp: Date;
-  created_at: Date;
-  description: string;
-  machine_name: string;
-  machine_id: string;
-  completed: boolean;
-  verification_status: boolean | null;
-}
 
 interface Props {
   groups: Group[];
@@ -42,51 +17,33 @@ interface Props {
   topPrediction: Prediction | null; 
   predictions: Prediction[];
   metricsName: string[];
-  // MachineDbId is the machine id in the database
-  // MachineId is the machine name in frontend
-  fetchMachineData: (machineName: string, machineDbId: string, sensor: string, timeRangeHours: number, step: number) => Promise<MachineChartData[]>;
 }
 
-export default function MachinePageClient({ groups, machines, initialMachineId, initialChartData, initialSensor, 
-  metricsName, fetchMachineData, topPrediction, predictions }: Props) {  
+export default function MachinePageClient({ 
+  groups, machines, initialMachineId, initialChartData, initialSensor, 
+  metricsName, topPrediction, predictions 
+}: Props) {  
   const [selectedMachine, setSelectedMachine] = useState<string | null>(initialMachineId);
   const [sensorType, setSensorType] = useState<string>(initialSensor);
   const [timeRange, setTimeRange] = useState<number>(168);
   const [chartData, setChartData] = useState<MachineChartData[]>(initialChartData);
-  const [heatmapData, setHeatmapData] = useState<{day: number, value: number}[]>([]);
-  const [prediction, setPrediction] = useState<Prediction | null>(topPrediction);
   const [hydrated, setHydrated] = useState(false);
   
+  const router = useRouter();
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
-    setTimeout(() => {
-      setHydrated(true);
-    }, 0);
+    setHydrated(true);
   }, []);
   
-  const router = useRouter()
-  const isInitialMount = useRef(true);
   const machineId = machines.find(m => m.name === selectedMachine)?.id || "";
+  
   const machinePreds = useMemo(() => {
     return predictions.filter(p => p.machine_id === machineId);
   }, [predictions, machineId]);
 
-  const formattedChartData = useMemo(() => {
-    return chartData.map(series => ({
-      ...series,
-      values: series.values.map(v => ({
-        ...v,
-        time: new Date(v.time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-      }))
-    }));
-  }, [chartData]);
-
-  useEffect(() => {
-    setSelectedMachine(initialMachineId);
-    setChartData(initialChartData);
-    setSensorType(initialSensor);
-  }, [initialMachineId, initialChartData, initialSensor]);
-
-  useEffect(() => {
+  // DERIVED STATE: Replaced useEffect with useMemo for performance
+  const heatmapData = useMemo(() => {
     const data = [];
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -107,8 +64,31 @@ export default function MachinePageClient({ groups, machines, initialMachineId, 
     for (let i = 0; i < 91; i++) {
       data.push({ day: i, value: counts[i] });
     }
-    setHeatmapData(data);
+    return data;
   }, [machinePreds]);
+
+  const prediction = useMemo(() => {
+    if (!hydrated && topPrediction) return topPrediction; // Use initial on first load
+    return machinePreds
+      .filter(p => new Date(p.fail_timestamp) > new Date())
+      .sort((a, b) => b.certainty - a.certainty)[0] || null;
+  }, [machinePreds, topPrediction, hydrated]);
+
+  const formattedChartData = useMemo(() => {
+    return chartData.map(series => ({
+      ...series,
+      values: series.values.map(v => ({
+        ...v,
+        time: new Date(v.time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      }))
+    }));
+  }, [chartData]);
+
+  useEffect(() => {
+    setSelectedMachine(initialMachineId);
+    setChartData(initialChartData);
+    setSensorType(initialSensor);
+  }, [initialMachineId, initialChartData, initialSensor]);
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -118,15 +98,9 @@ export default function MachinePageClient({ groups, machines, initialMachineId, 
     
     if (selectedMachine) {
       const step = Math.floor((timeRange * 3600) / 30);
-
-      fetchMachineData(selectedMachine, machineId, sensorType, timeRange, step).then(data => setChartData(data));
-
-      const top = machinePreds
-        .filter(p => new Date(p.fail_timestamp) > new Date())
-        .sort((a, b) => b.certainty - a.certainty)[0] || null;
-      setPrediction(top);
+      getMachineData(selectedMachine, machineId, sensorType, timeRange, step).then(data => setChartData(data));
     }
-  }, [selectedMachine, sensorType, timeRange, fetchMachineData, machinePreds]);
+  }, [selectedMachine, sensorType, timeRange, machineId]);
 
   const handleSelectMachine = (name: string) => {
     setSelectedMachine(name);
