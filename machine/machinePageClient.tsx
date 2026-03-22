@@ -38,6 +38,10 @@ export default function MachinePageClient({
 
   const heatmapData = useMemo(() => {
     const data = [];
+    if (!hydrated) {
+      for (let i = 0; i < 91; i++) data.push({ day: i, value: 0 });
+      return data;
+    }
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const counts = new Array(91).fill(0);
@@ -58,7 +62,7 @@ export default function MachinePageClient({
       data.push({ day: i, value: counts[i] });
     }
     return data;
-  }, [machinePreds]);
+  }, [machinePreds, hydrated]);
 
   const prediction = useMemo(() => {
     if (!hydrated && topPrediction) return topPrediction;
