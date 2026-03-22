@@ -57,7 +57,7 @@ export default async function MachinePage({
       initialSensor={sensor}
       initialTimeRange={range}
       topPrediction={predOk ? topPrediction : null}
-      predictions={predOk ? allPredictions : []}
+      predictions={machinePredictions}
       metricsName={metricsName}
     />
   );

@@ -21,7 +21,7 @@ interface Props {
 
 export default function MachinePageClient({ 
   groups, machines, initialMachineId, initialChartData, initialSensor, initialTimeRange,
-  metricsName, topPrediction, predictions 
+  metricsName, topPrediction, predictions: machinePreds
 }: Props) {  
   const [hydrated, setHydrated] = useState(false);
   const router = useRouter();
@@ -29,12 +29,6 @@ export default function MachinePageClient({
   useEffect(() => {
     setHydrated(true);
   }, []);
-  
-  const machineId = machines.find(m => m.name === initialMachineId)?.id || "";
-  
-  const machinePreds = useMemo(() => {
-    return predictions.filter(p => p.machine_id === machineId);
-  }, [predictions, machineId]);
 
   const heatmapData = useMemo(() => {
     const data = [];
