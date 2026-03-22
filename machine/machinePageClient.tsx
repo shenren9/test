@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { LineChart } from "../components/LineChart";
 import { MachineList } from "../components/MachineList/MachineList";
 import { Machine, Group, Prediction, MachineChartData } from "./types";
-import { getMachineData } from "./actions"; // Imported directly
 import "./page.css";
 
 interface Props {
@@ -14,35 +13,29 @@ interface Props {
   initialMachineId: string;
   initialChartData: MachineChartData[];
   initialSensor: string;
+  initialTimeRange: number;
   topPrediction: Prediction | null; 
   predictions: Prediction[];
   metricsName: string[];
 }
 
 export default function MachinePageClient({ 
-  groups, machines, initialMachineId, initialChartData, initialSensor, 
+  groups, machines, initialMachineId, initialChartData, initialSensor, initialTimeRange,
   metricsName, topPrediction, predictions 
 }: Props) {  
-  const [selectedMachine, setSelectedMachine] = useState<string | null>(initialMachineId);
-  const [sensorType, setSensorType] = useState<string>(initialSensor);
-  const [timeRange, setTimeRange] = useState<number>(168);
-  const [chartData, setChartData] = useState<MachineChartData[]>(initialChartData);
   const [hydrated, setHydrated] = useState(false);
-  
   const router = useRouter();
-  const isInitialMount = useRef(true);
 
   useEffect(() => {
     setHydrated(true);
   }, []);
   
-  const machineId = machines.find(m => m.name === selectedMachine)?.id || "";
+  const machineId = machines.find(m => m.name === initialMachineId)?.id || "";
   
   const machinePreds = useMemo(() => {
     return predictions.filter(p => p.machine_id === machineId);
   }, [predictions, machineId]);
 
-  // DERIVED STATE: Replaced useEffect with useMemo for performance
   const heatmapData = useMemo(() => {
     const data = [];
     const now = new Date();
@@ -68,48 +61,33 @@ export default function MachinePageClient({
   }, [machinePreds]);
 
   const prediction = useMemo(() => {
-    if (!hydrated && topPrediction) return topPrediction; // Use initial on first load
+    if (!hydrated && topPrediction) return topPrediction;
     return machinePreds
       .filter(p => new Date(p.fail_timestamp) > new Date())
       .sort((a, b) => b.certainty - a.certainty)[0] || null;
   }, [machinePreds, topPrediction, hydrated]);
 
   const formattedChartData = useMemo(() => {
-    return chartData.map(series => ({
+    if (!hydrated) return []; 
+    return initialChartData.map(series => ({
       ...series,
       values: series.values.map(v => ({
         ...v,
         time: new Date(v.time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       }))
     }));
-  }, [chartData]);
-
-  useEffect(() => {
-    setSelectedMachine(initialMachineId);
-    setChartData(initialChartData);
-    setSensorType(initialSensor);
-  }, [initialMachineId, initialChartData, initialSensor]);
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    
-    if (selectedMachine) {
-      const step = Math.floor((timeRange * 3600) / 30);
-      getMachineData(selectedMachine, machineId, sensorType, timeRange, step).then(data => setChartData(data));
-    }
-  }, [selectedMachine, sensorType, timeRange, machineId]);
+  }, [initialChartData, hydrated]);
 
   const handleSelectMachine = (name: string) => {
-    setSelectedMachine(name);
-    router.push(`/machine?id=${encodeURIComponent(name)}&sensor=${sensorType}`);
+    router.push(`/machine?id=${encodeURIComponent(name)}&sensor=${initialSensor}&range=${initialTimeRange}`);
   };
 
   const handleSensorChange = (sensor: string) => {
-    setSensorType(sensor);
-    router.push(`/machine?id=${encodeURIComponent(selectedMachine || "")}&sensor=${sensor}`);
+    router.push(`/machine?id=${encodeURIComponent(initialMachineId)}&sensor=${sensor}&range=${initialTimeRange}`);
+  };
+
+  const handleRangeChange = (range: number) => {
+    router.push(`/machine?id=${encodeURIComponent(initialMachineId)}&sensor=${initialSensor}&range=${range}`);
   };
 
   const getColorClass = (value: number) => {
@@ -126,19 +104,19 @@ export default function MachinePageClient({
     <main className="machine-dashboard">
       <div className="main-container">
         <div className="machine-header-title block md:hidden pt-6 px-4 pb-0 text-center text-2xl font-bold text-[#35699f] capitalize">
-          {selectedMachine || 'Select a machine'}
+          {initialMachineId || 'Select a machine'}
         </div>
 
         <aside className="machine-sidebar">
           <MachineList 
             groups={groups}
             machines={machines}
-            selectedMachines={selectedMachine ? [selectedMachine] : []}
+            selectedMachines={initialMachineId ? [initialMachineId] : []}
             onSelectMachine={handleSelectMachine}
           />
         </aside>
         <section className="machine-content">
-          <div className="machine-header-title hidden md:block">{selectedMachine || 'Select a machine'}</div>
+          <div className="machine-header-title hidden md:block">{initialMachineId || 'Select a machine'}</div>
           
           <div className="content-top-row">
             <div className="widget live-data-widget">
@@ -150,7 +128,7 @@ export default function MachinePageClient({
               <div className="flex flex-col md:flex-row gap-4 mt-4 md:items-center">
                 <div className="sensor-selector mb-0">
                   <label>Sensor:</label>
-                  <select value={sensorType} onChange={(e) => handleSensorChange(e.target.value)}>
+                  <select value={initialSensor} onChange={(e) => handleSensorChange(e.target.value)}>
                     {metricsName.map(metric => (
                       <option key={metric} value={metric}>
                         {metric}
@@ -161,7 +139,7 @@ export default function MachinePageClient({
                 
                 <div className="sensor-selector mb-0">
                   <label>Range:</label>
-                  <select value={timeRange} onChange={(e) => setTimeRange(Number(e.target.value))}>
+                  <select value={initialTimeRange} onChange={(e) => handleRangeChange(Number(e.target.value))}>
                     <option value={24}>1 Day</option>
                     <option value={168}>7 Days</option>
                     <option value={336}>14 Days</option>
@@ -242,8 +220,8 @@ export default function MachinePageClient({
                       className={`heatmap-cell ${getColorClass(data.value)} cursor-pointer`}
                       title={`Activity level: ${data.value}`}
                       onClick={() => {
-                        if (selectedMachine) {
-                          router.push(`/alert_view?machine=${encodeURIComponent(selectedMachine)}`);
+                        if (initialMachineId) {
+                          router.push(`/alert_view?machine=${encodeURIComponent(initialMachineId)}`);
                         }
                       }}
                     />
