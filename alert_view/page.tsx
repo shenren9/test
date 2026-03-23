@@ -14,13 +14,15 @@ export default async function AlertView({
 
   const { ok, groups, machines, error } = await getMachineList();
   const { ok: predictionsOk, data: allAlerts } = await fetchMachinePredictions();
-  if (!predictionsOk || !ok) return <div>Error: {error}</div>;
+  if (!ok) return <div>Error: {error}</div>;
+  const safeAlerts = predictionsOk && allAlerts ? allAlerts : [];
+
   return (
 
     <AlertViewClient 
       groups={groups} 
       machines={machines} 
-      allAlerts={allAlerts} 
+      allAlerts={safeAlerts} 
       initialMachine={initialMachine}
       currentUserId={session.user.id}
     />
