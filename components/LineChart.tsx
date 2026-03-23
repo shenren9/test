@@ -39,6 +39,10 @@ export const LineChart = ({ chartData = [] }: LineChartProps) => {
   const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false, 
+    interaction: {
+      mode: "index",
+      intersect: false
+    },
     plugins: {
       legend: {
         position: "top" as const
