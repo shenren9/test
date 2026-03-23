@@ -33,7 +33,7 @@ export interface Prediction {
   verification_status: boolean | null;
 }
 
-export interface Props {
+export interface MachinePageClientProps {
   groups: Group[];
   machines: Machine[];
   initialMachineId: string;

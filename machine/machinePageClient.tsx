@@ -5,25 +5,14 @@ import { useRouter } from "next/navigation";
 import { LineChart } from "../components/LineChart";
 import { MachineList } from "../components/MachineList/MachineList";
 import { Heatmap } from "../components/Heatmap/Heatmap";
-import { Machine, Group, Prediction, MachineChartData } from "./types";
+import { MachinePageClientProps } from "./types";
 import "./page.css";
 
-interface Props {
-  groups: Group[];
-  machines: Machine[];
-  initialMachineId: string;
-  initialChartData: MachineChartData[];
-  initialSensor: string;
-  initialTimeRange: number;
-  topPrediction: Prediction | null; 
-  predictions: Prediction[];
-  metricsName: string[];
-}
 
 export default function MachinePageClient({ 
   groups, machines, initialMachineId, initialChartData, initialSensor, initialTimeRange,
   metricsName, topPrediction, predictions: machinePreds
-}: Props) {  
+}: MachinePageClientProps) {  
   const [hydrated, setHydrated] = useState(false);
   const router = useRouter();
 
@@ -60,7 +49,6 @@ export default function MachinePageClient({
         <div className="machine-header-title block md:hidden pt-6 px-4 pb-0 text-center text-2xl font-bold text-[#35699f] capitalize">
           {initialMachineId || 'Select a machine'}
         </div>
-
         <aside className="machine-sidebar">
           <MachineList 
             groups={groups}
@@ -71,14 +59,12 @@ export default function MachinePageClient({
         </aside>
         <section className="machine-content">
           <div className="machine-header-title hidden md:block">{initialMachineId || 'Select a machine'}</div>
-          
           <div className="content-top-row">
             <div className="widget live-data-widget">
               <h2>Live Data</h2>
               <div className="chart-container">
                   <LineChart chartData={formattedChartData} />
               </div>
-              
               <div className="flex flex-col md:flex-row gap-4 mt-4 md:items-center">
                 <div className="sensor-selector mb-0">
                   <label>Sensor:</label>
@@ -90,7 +76,6 @@ export default function MachinePageClient({
                     ))}
                   </select>
                 </div>
-                
                 <div className="sensor-selector mb-0">
                   <label>Range:</label>
                   <select value={initialTimeRange} onChange={(e) => handleRangeChange(Number(e.target.value))}>
@@ -101,9 +86,7 @@ export default function MachinePageClient({
                   </select>
                 </div>
               </div>
-
             </div>
-
             <div className="stats-column">
               <div className="prediction-grid">
                 <div className="prediction-box purple">
@@ -126,7 +109,6 @@ export default function MachinePageClient({
               </div>
             </div>
           </div>
-
           <div className="content-bottom-row">
             <div className="widget alert-history">
               <div className="widget-header">
@@ -161,13 +143,11 @@ export default function MachinePageClient({
                 </tbody>
               </table>
             </div>
-
             <Heatmap 
               predictions={machinePreds} 
               initialMachineId={initialMachineId} 
               hydrated={hydrated} 
             />
-
           </div>
         </section>
       </div>
