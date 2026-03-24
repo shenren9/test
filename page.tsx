@@ -108,12 +108,9 @@ export default async function Dashboard() {
   const machines = await getMachineData();
   const status_counts = await getDonutData();
   const { ok: predictionsOk, data: allAlerts } = await fetchMachinePredictions();
-  
   const safeAlerts = predictionsOk && allAlerts ? allAlerts : [];
-  
   const highPriorityAlerts = safeAlerts.filter((alert: Prediction) => alert.kind === "Y1")
   .sort((a: Prediction, b: Prediction) => (new Date(a.fail_timestamp).getTime() - new Date(b.fail_timestamp).getTime()));
-  
   const daysUntilNextAlert = highPriorityAlerts[0] ? Math.ceil((new Date(highPriorityAlerts[0].fail_timestamp).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
   const uncompletedAlerts = highPriorityAlerts.filter((alert: Prediction) => !alert.completed);
 
@@ -135,7 +132,7 @@ export default async function Dashboard() {
               <div className="stat-box">
                 <span className="stat-label">Next Failure</span>
                 <span className="stat-value">{daysUntilNextAlert !== null ? `${daysUntilNextAlert}d` : '-'}</span>
-                <span className="stat-detail">{highPriorityAlerts[0] ? `${highPriorityAlerts[0].machine_name} : ${highPriorityAlerts[0].description}` : 'No upcoming alerts'}</span>
+                <span className="stat-detail">{highPriorityAlerts[0] ? `${highPriorityAlerts[0].machine_name} : ${highPriorityAlerts[0].description}` : 'No alerts'}</span>
               </div>
               <div className="stat-box">
                 <span className="stat-label">Predicted Downtime</span>
@@ -150,7 +147,7 @@ export default async function Dashboard() {
           </div>
           <div className="overview-content-mobile h-40">
             <div className="overview-content-mobile-chips aspect-square bg-[#9FD2FF] text-[#1a3a5f] p-2">
-              <span className="text-8xl font-bold leading-none">{uncompletedAlerts.length || 3}</span>
+              <span className="text-8xl font-bold leading-none">3</span>
               <span className="text-[10px] font-bold uppercase tracking-wider mt-1 text-center leading-tight">
                 Action Items
               </span>
