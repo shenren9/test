@@ -44,3 +44,22 @@ export interface MachinePageClientProps {
   predictions: Prediction[];
   metricsName: string[];
 }
+
+export interface PrometheusMetric {
+  machine?: string;
+  sensor?: string;
+  [key: string]: any;
+}
+
+export interface PrometheusResult {
+  metric: PrometheusMetric;
+  values: [number, string][];
+}
+
+export interface PrometheusResponse {
+  status: string;
+  data: {
+    resultType: string;
+    result: PrometheusResult[];
+  };
+}

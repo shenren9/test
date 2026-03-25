@@ -19,6 +19,12 @@ interface Group {
   id: string;
 }
 
+interface Assignee {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface Prediction {
   id: string;
   kind: string;
@@ -28,9 +34,7 @@ interface Prediction {
   description: string;
   machine_name: string;
 
-  assigned_to: string | null;
-  assigned_name?: string | null;
-  assigned_email?: string | null;
+  assignees: Assignee[];
   completed: boolean;
   verification_status: boolean | null;
 }
@@ -156,7 +160,6 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
       return;
     }
 
-    patchAlert(selectedAlert.id, { assigned_to: res.data.assigned_to });
     await reloadAlerts();
     setBusy(false);
   };
@@ -173,7 +176,6 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
       return;
     }
 
-    patchAlert(selectedAlert.id, { assigned_to: null });
     await reloadAlerts();
     setBusy(false);
   };
@@ -220,11 +222,11 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
               ? "Negative"
               : "Unknown";
 
-  const assignedLabel = !selectedAlert?.assigned_to
-      ? "Unassigned"
-      : selectedAlert.assigned_name ?? selectedAlert.assigned_email ?? "Assigned";
+  const isAssignedToMe = selectedAlert?.assignees?.some((a) => a.id === currentUserId) ?? false;
 
-  const isAssignedToMe = selectedAlert?.assigned_to === currentUserId;
+  const assignedLabel = !selectedAlert?.assignees?.length
+      ? "Unassigned"
+      : selectedAlert.assignees.map((a) => a.name || a.email).join(", ");
 
   const isVerificationPositive = selectedAlert?.verification_status === true;
   const isVerificationNegative = selectedAlert?.verification_status === false;
@@ -373,7 +375,16 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
                     )}
 
                     <div className="flex flex-wrap gap-2">
-                      {!selectedAlert.assigned_to ? (
+                      {isAssignedToMe ? (
+                          <button
+                              type="button"
+                              disabled={busy}
+                              className="px-3 py-2 rounded-md bg-gray-600 text-white text-sm"
+                              onClick={onUnassign}
+                          >
+                            Unassign me
+                          </button>
+                      ) : (
                           <button
                               type="button"
                               disabled={busy}
@@ -382,16 +393,7 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
                           >
                             Assign to me
                           </button>
-                      ) : isAssignedToMe ? (
-                          <button
-                              type="button"
-                              disabled={busy}
-                              className="px-3 py-2 rounded-md bg-gray-600 text-white text-sm"
-                              onClick={onUnassign}
-                          >
-                            Unassign
-                          </button>
-                      ) : null}
+                      )}
 
                       <button
                           type="button"

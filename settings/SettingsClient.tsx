@@ -4,6 +4,7 @@ import { BackButton } from "../components/BackButton"
 import { LogOutButton } from "../components/LogOutButton"
 import { ImportButton } from "../components/ImportButton";
 import { approveUser, deleteUser, demoteUser, promoteUser } from "./actions";
+import { SapSensorfactMappingSection } from "./SapSensorfactMappingSection";
 import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import { handleSubscribeAction, deletePushSubscriptionAction, getDevicePushSubscription } from "@/app/actions/notifications";
@@ -122,7 +123,15 @@ function ApproveUser({ email, id, admin, approved }: { email: string; id: string
 }
 
 // Main Component: Settings Client
-export default function SettingsClient({ usersToApprove }: { usersToApprove: { email: string; id: string; admin: boolean; approved: boolean }[] }) {
+export default function SettingsClient({
+  usersToApprove,
+  machines,
+  isAdmin,
+}: {
+  usersToApprove: { email: string; id: string; admin: boolean; approved: boolean }[];
+  machines: { id: string; name: string }[];
+  isAdmin: boolean;
+}) {
   const { data: session } = useSession();
 
   // State for checkboxes
@@ -160,6 +169,11 @@ export default function SettingsClient({ usersToApprove }: { usersToApprove: { e
 
       try {
         const { ok, user } = await getUserSettings(session.user.id);
+
+        if (ok && user) {
+          setPrefs(prev => ({ ...prev, email: user.email_notifications || false }));
+        }
+        setLoading(false);
 
         let isPushEnabled = false;
         try {
@@ -254,6 +268,9 @@ export default function SettingsClient({ usersToApprove }: { usersToApprove: { e
 
       if (!result.ok) throw new Error(result.error);
 
+      alert("Settings saved successfully!");
+      setSaving(false);
+
       // Sync Browser/SW state with the DB preference
       if (prefs.push) {
         await subscribeToPush();
@@ -280,6 +297,103 @@ export default function SettingsClient({ usersToApprove }: { usersToApprove: { e
     setPrefs((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const [exportForm, setExportForm] = useState({
+    startDate: "",
+    endDate: "",
+    minCertainty: "",
+    maxCertainty: "",
+    machineId: "",
+    kinds: [] as string[],
+    completed: "",
+    verified: "",
+    format: "csv",
+  });
+  const [exporting, setExporting] = useState(false);
+
+  const handleKindToggle = (kind: string) => {
+    setExportForm(prev => ({
+      ...prev,
+      kinds: prev.kinds.includes(kind) ? prev.kinds.filter(k => k !== kind) : [...prev.kinds, kind],
+    }));
+  };
+
+  const handleExport = async () => {
+    if (!exportForm.startDate || !exportForm.endDate) {
+      alert("Start Date and End Date are required.");
+      return;
+    }
+    setExporting(true);
+    try {
+      const params = new URLSearchParams();
+      params.set("startDate", exportForm.startDate);
+      params.set("endDate", exportForm.endDate);
+      if (exportForm.minCertainty) params.set("minCertainty", exportForm.minCertainty);
+      if (exportForm.maxCertainty) params.set("maxCertainty", exportForm.maxCertainty);
+      if (exportForm.machineId) params.set("machineIds", exportForm.machineId);
+      if (exportForm.kinds.length > 0) params.set("kinds", exportForm.kinds.join(","));
+      if (exportForm.completed) params.set("completed", exportForm.completed);
+      if (exportForm.verified) params.set("verified", exportForm.verified);
+
+      if (exportForm.format === "pdf") {
+        params.set("format", "json");
+        const res = await fetch(`/api/export-alerts?${params.toString()}`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: "Export failed" }));
+          alert(err.error || "Export failed");
+          return;
+        }
+        const data = await res.json();
+        const { jsPDF } = await import("jspdf");
+        const autoTable = (await import("jspdf-autotable")).default;
+
+        const doc = new jsPDF({ orientation: "landscape" });
+        const today = new Date().toISOString().split("T")[0];
+        doc.setFontSize(14);
+        doc.text(`Alerts Export - ${today}`, 14, 15);
+
+        const columns = [
+          "Alert ID", "Machine Name", "Kind", "Certainty (%)", "Description",
+          "Estimated Failure Date", "Created At", "Verification Status",
+          "Assigned To", "Completed"
+        ];
+        const rows = data.map((row: Record<string, string>) =>
+          columns.map(col => row[col] || "")
+        );
+
+        autoTable(doc, {
+          head: [columns],
+          body: rows,
+          startY: 22,
+          styles: { fontSize: 7 },
+          headStyles: { fillColor: [0, 53, 128] },
+        });
+
+        doc.save(`alerts-export-${today}.pdf`);
+      } else {
+        const res = await fetch(`/api/export-alerts?${params.toString()}`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: "Export failed" }));
+          alert(err.error || "Export failed");
+          return;
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `alerts-export-${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err: any) {
+      console.error("Export error:", err);
+      alert("Failed to export alerts.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
         <main>
       <div className={styles.pageGrid}>
@@ -290,43 +404,126 @@ export default function SettingsClient({ usersToApprove }: { usersToApprove: { e
           <div className={styles.subheader}>
             <h1 className={styles.title}>Settings</h1>
           </div>
-          <div className={styles.notifications}>
-            <h1 className={styles.bodyTitle}>Notifications</h1>
-            <fieldset className={styles.bodyContent} disabled={loading || saving}>
-              <legend>Opt in for notifications</legend>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-                <input type="checkbox" id="push" checked={prefs.push} onChange={() => handleToggle("push")} />
-                <label htmlFor="push" style={{ cursor: "pointer" }}>Push Notifications</label>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-                <input type="checkbox" id="email" checked={prefs.email} onChange={() => handleToggle("email")} />
-                <label htmlFor="email" style={{ cursor: "pointer" }}>Email</label>
-              </div>
-              <button className={styles.saveButton} onClick={handleSave}> 
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
-            </fieldset>
-          </div>
-
-          <div className={styles.importData}>
-            <h1 className={styles.bodyTitle}>Import SAP Data</h1>
-            <div className={styles.bodyContent}>
-              <ImportButton />
+          <div className={styles.topRow}>
+            <div className={styles.notifications}>
+              <h1 className={styles.bodyTitle}>Notifications</h1>
+              <fieldset className={styles.bodyContent} disabled={loading || saving}>
+                <legend>Opt in for notifications</legend>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                  <input type="checkbox" id="push" checked={prefs.push} onChange={() => handleToggle("push")} />
+                  <label htmlFor="push" style={{ cursor: "pointer" }}>Push Notifications</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                  <input type="checkbox" id="email" checked={prefs.email} onChange={() => handleToggle("email")} />
+                  <label htmlFor="email" style={{ cursor: "pointer" }}>Email</label>
+                </div>
+                <button className={styles.saveButton} onClick={handleSave}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
+              </fieldset>
             </div>
-          </div>
-
-          {usersToApprove.length > 0 && (
-            <div className={styles.usersToApprove}>
-              <h1 className={styles.bodyTitle}>Users to Approve</h1>
+            <div className={styles.importData}>
+              <h1 className={styles.bodyTitle}>Import SAP Data</h1>
+              <p>The SAP data should have the columns Functional Location, Notification type, malfunction start date and time, notification id, and a description.</p>
               <div className={styles.bodyContent}>
-                <ul>
-                  {usersToApprove.map((user) => (
-                    <ApproveUser key={user.id} email={user.email} id={user.id} admin={user.admin} approved={user.approved} />
-                  ))}
-                </ul>
+                <ImportButton />
               </div>
             </div>
-          )}
+          </div>
+
+          <div className={styles.bottomRow}>
+            <div className={styles.exportAlerts}>
+              <h1 className={styles.bodyTitle}>Export Alerts</h1>
+              <div className={styles.bodyContent}>
+                <div className={styles.exportPairRow}>
+                  <div className={styles.exportField}>
+                    <label>Start Date</label>
+                    <input type="date" className={styles.exportInput} value={exportForm.startDate} onChange={e => setExportForm(prev => ({ ...prev, startDate: e.target.value }))} />
+                  </div>
+                  <div className={styles.exportField}>
+                    <label>End Date</label>
+                    <input type="date" className={styles.exportInput} value={exportForm.endDate} onChange={e => setExportForm(prev => ({ ...prev, endDate: e.target.value }))} />
+                  </div>
+                </div>
+                <div className={styles.exportPairRow}>
+                  <div className={styles.exportField}>
+                    <label>Min Certainty (%)</label>
+                    <input type="number" min="0" max="100" className={styles.exportInput} value={exportForm.minCertainty} onChange={e => setExportForm(prev => ({ ...prev, minCertainty: e.target.value }))} />
+                  </div>
+                  <div className={styles.exportField}>
+                    <label>Max Certainty (%)</label>
+                    <input type="number" min="0" max="100" className={styles.exportInput} value={exportForm.maxCertainty} onChange={e => setExportForm(prev => ({ ...prev, maxCertainty: e.target.value }))} />
+                  </div>
+                </div>
+                <div className={styles.exportPairRow}>
+                  <div className={styles.exportField}>
+                    <label>Machine</label>
+                    <select className={styles.exportInput} value={exportForm.machineId} onChange={e => setExportForm(prev => ({ ...prev, machineId: e.target.value }))}>
+                      <option value="">All Machines</option>
+                      {machines.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </select>
+                  </div>
+                  <div className={styles.exportField}>
+                    <label>Kind</label>
+                    <div className={styles.exportKinds}>
+                      {["Y1", "Y2", "Spike"].map(kind => (
+                        <label key={kind} style={{ display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+                          <input type="checkbox" checked={exportForm.kinds.includes(kind)} onChange={() => handleKindToggle(kind)} />
+                          {kind}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.exportPairRow}>
+                  <div className={styles.exportField}>
+                    <label>Completed</label>
+                    <select className={styles.exportInput} value={exportForm.completed} onChange={e => setExportForm(prev => ({ ...prev, completed: e.target.value }))}>
+                      <option value="">Any</option>
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  </div>
+                  <div className={styles.exportField}>
+                    <label>Verification</label>
+                    <select className={styles.exportInput} value={exportForm.verified} onChange={e => setExportForm(prev => ({ ...prev, verified: e.target.value }))}>
+                      <option value="">Any</option>
+                      <option value="true">Confirmed</option>
+                      <option value="false">Rejected</option>
+                      <option value="null">Unverified</option>
+                    </select>
+                  </div>
+                </div>
+                <div className={styles.exportPairRow}>
+                  <div className={styles.exportField}>
+                    <label>Format</label>
+                    <select className={styles.exportInput} value={exportForm.format} onChange={e => setExportForm(prev => ({ ...prev, format: e.target.value }))}>
+                      <option value="csv">CSV</option>
+                      <option value="pdf">PDF</option>
+                    </select>
+                  </div>
+                </div>
+                <button className={styles.saveButton} onClick={handleExport} disabled={exporting}>
+                  {exporting ? "Exporting..." : exportForm.format === "pdf" ? "Export PDF" : "Export CSV"}
+                </button>
+              </div>
+            </div>
+
+            {isAdmin && <SapSensorfactMappingSection />}
+
+            {usersToApprove.length > 0 && (
+              <div className={styles.usersToApprove}>
+                <h1 className={styles.bodyTitle}>Users to Approve</h1>
+                <div className={styles.bodyContent}>
+                  <ul>
+                    {usersToApprove.map((user) => (
+                      <ApproveUser key={user.id} email={user.email} id={user.id} admin={user.admin} approved={user.approved} />
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className={styles.logOut}>
             <LogOutButton />

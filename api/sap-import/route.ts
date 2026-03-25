@@ -63,6 +63,16 @@ export async function POST(req: Request) {
                 const wasInserted = Boolean(r.rows?.[0]?.inserted);
                 if (wasInserted) inserted++;
                 else updated++;
+
+                const flRaw = String(row["Functional Location"] ?? "").trim();
+                if (flRaw) {
+                    await client.query(
+                        `INSERT INTO sap_to_sensorfact_mapping (sap_machine_id, sensorfact_machine_id, sensorfact_group_id)
+                         VALUES ($1, NULL, NULL)
+                         ON CONFLICT (sap_machine_id) DO NOTHING`,
+                        [id]
+                    );
+                }
             };
 
             if (isCsv) {
