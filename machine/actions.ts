@@ -1,24 +1,16 @@
 "use server";
 
+
+import { pool } from "@/lib/db";
 import { MachineChartData } from "./types";
 import { PrometheusResponse } from "./types";
 
 export async function getMetrics(): Promise<string[]> {
   try {
-    const host = process.env.PROMETHEUS_HOST || 'victoriametrics';
-    const port = process.env.PROMETHEUS_PORT || '8428';
-    const end = Math.floor(Date.now() / 1000);
-    const start = end - (30 * 24 * 3600); 
-    const url = `http://${host}:${port}/api/v1/label/__name__/values?start=${start}&end=${end}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    const data = await res.json();
-    
-    if (data.status === 'success' && Array.isArray(data.data)) {
-      return data.data.filter((name: string) => !name.startsWith('go_') && !name.startsWith('vm_') && !name.startsWith('promhttp_'));
-    }
-    return [];
+    const res = await pool.query('SELECT DISTINCT metric_name FROM metrics');
+    return res.rows.map(row => row.metric_name);
   } catch (error) {
-    console.error("Failed to fetch metrics from VictoriaMetrics:", error);
+    console.error("Failed to fetch metrics from Postgres:", error);
     return [];
   }
 }
