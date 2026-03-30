@@ -57,7 +57,6 @@ function AlertListItem({ alert, isSelected, onClick, now }: {
   return (
     <div
       onClick={onClick}
-      // TODO : choose a better color
       className={`cursor-pointer overflow-clip rounded-lg transition-all ${ isSelected && "ring-3 ring-black scale-[1.01]"}`}
     >
       <AlertItem
@@ -78,7 +77,7 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAlertId, setSelectedAlertId] = useState<string | undefined>(undefined);
 
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number>(0);
   const [hydrated, setHydrated] = useState(false);
 
   const [alertsState, setAlertsState] = useState<Prediction[]>(allAlerts);
@@ -86,13 +85,15 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => setHydrated(true), 0);
+    setNow(Date.now());
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [hydrated]);
 
   useEffect(() => {
     setAlertsState(allAlerts);
@@ -109,7 +110,6 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
     return alertsState.filter((alert) => selectedMachines.includes(alert.machine_name));
   }, [alertsState, selectedMachines]);
 
-  /*search bar!! simple for now, might need to add more features (note for me/Julie)*/
   const filteredAlerts = useMemo(() => {
     if (!searchQuery.trim()) return alerts;
     const query = searchQuery.toLowerCase();
@@ -121,7 +121,6 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
     );
   }, [alerts, searchQuery]);
 
-  // Separate alerts into "completed" and "incomplete" this needs to be declared after filteredAlerts
   const [showIncomplete, setShowIncomplete] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
 
@@ -270,7 +269,6 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
                 </div>
               ) : (
                 <>
-                  {/* Incomplete Section */}
                   <section className="flex flex-col mb-6">
                     <div className="top-0 bg-white pb-2">
                       <button
@@ -282,7 +280,7 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
                       </button>
                     </div>
 
-                    {showIncomplete && (
+                    {showIncomplete && hydrated && (
                       <div className="px-3 py-2 space-y-3 overflow-hidden">
                         {incompleteAlerts.map((alert) => (
                           <AlertListItem
@@ -297,7 +295,6 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
                     )}
                   </section>
 
-                  {/* Completed Section */}
                   <section className="flex flex-col">
                     <div className="top-0 bg-white pb-2">
                       <button
@@ -309,7 +306,7 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
                       </button>
                     </div>
 
-                    {showCompleted && (
+                    {showCompleted && hydrated && (
                       <div className="isolate px-3 py-2 space-y-3 overflow-hidden">
                         {completedAlerts.map((alert) => (
                           <AlertListItem
@@ -438,7 +435,6 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
                       )}
                     </div>
 
-                    {/* Review change: comments moved out */}
                     <CommentsPanel
                         predictionId={selectedAlert.id}
                         busy={busy}

@@ -111,8 +111,10 @@ export default async function Dashboard() {
   const safeAlerts = predictionsOk && allAlerts ? allAlerts : [];
   const highPriorityAlerts = safeAlerts.filter((alert: Prediction) => alert.kind === "Y1")
   .sort((a: Prediction, b: Prediction) => (new Date(a.fail_timestamp).getTime() - new Date(b.fail_timestamp).getTime()));
-  const daysUntilNextAlert = highPriorityAlerts[0] ? Math.ceil((new Date(highPriorityAlerts[0].fail_timestamp).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
   const uncompletedAlerts = highPriorityAlerts.filter((alert: Prediction) => !alert.completed);
+  const upcomingAlert = uncompletedAlerts.find((alert: Prediction) => new Date(alert.fail_timestamp).getTime() > Date.now());
+  const daysUntilNextAlert = upcomingAlert ? Math.ceil((new Date(upcomingAlert.fail_timestamp)
+  .getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
 
   return (
     <main className="home-dashboard">
@@ -132,7 +134,7 @@ export default async function Dashboard() {
               <div className="stat-box">
                 <span className="stat-label">Next Failure</span>
                 <span className="stat-value">{daysUntilNextAlert !== null ? `${daysUntilNextAlert}d` : '-'}</span>
-                <span className="stat-detail">{highPriorityAlerts[0] ? `${highPriorityAlerts[0].machine_name} : ${highPriorityAlerts[0].description}` : 'No alerts'}</span>
+                <span className="stat-detail">{upcomingAlert ? `${upcomingAlert.machine_name} : ${upcomingAlert.description}` : 'No alerts'}</span>
               </div>
               <div className="stat-box">
                 <span className="stat-label">Predicted Downtime</span>

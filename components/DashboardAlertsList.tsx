@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertItem } from "@/app/components/AlertItem/AlertItem";
 
 interface Prediction {
@@ -17,10 +17,20 @@ interface Prediction {
 export default function DashboardAlertsList({ alerts }: { alerts: Prediction[] }) {
   const [showIncomplete, setShowIncomplete] = useState(true);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [now, setNow] = useState<number>(0);
+  const [hydrated, setHydrated] = useState(false);
+  
+  useEffect(() => {
+    setNow(Date.now());
+    setHydrated(true);
+  }, []);
 
   const incompleteAlerts = alerts.filter((a) => !a.completed);
   const completedAlerts = alerts.filter((a) => a.completed);
-  const now = Date.now();
+
+  if (!hydrated) {
+    return null;
+  }
 
   if (alerts.length === 0) {
     return <p className="no-alerts text-center py-4">No active alerts</p>;

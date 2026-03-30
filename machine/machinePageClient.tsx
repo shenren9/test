@@ -14,12 +14,14 @@ export default function MachinePageClient({
   metricsName, topPrediction, predictions: machinePreds
 }: MachinePageClientProps) {  
   const [hydrated, setHydrated] = useState(false);
+  const [now, setNow] = useState<number>(0);
   const router = useRouter();
 
   const [comparedData, setComparedData] = useState<MachineChartData[]>([]);
   const [isFetchingCompare, setIsFetchingCompare] = useState(false);
 
   useEffect(() => {
+    setNow(Date.now());
     setHydrated(true);
   }, []);
 
@@ -113,7 +115,7 @@ export default function MachinePageClient({
               {comparedData.length > 0 && (
                 <div className="flex gap-2 mb-3 flex-wrap">
                   {comparedData.map(cmd => (
-                    <div key={cmd.machine} className="flex items-center gap-2 bg-[#e8f4f8] text-[#2b5a7a] px-3 py-1.5 text-xs shadow-sm">
+                        <div key={cmd.machine} className="flex items-center gap-2 bg-[#e8f4f8] text-[#2b5a7a] px-3 py-1.5 text-xs shadow-sm">
                       <span>{cmd.machine}</span>
                       <button 
                         onClick={() => handleRemoveCompare(cmd.machine)} 
@@ -181,7 +183,7 @@ export default function MachinePageClient({
                   {topPrediction ? (
                     <>
                       <span className="value">
-                        {hydrated ? Math.ceil((new Date(topPrediction.fail_timestamp).getTime() - Date.now()) / 86400000) : '-'}d
+                        {hydrated ? Math.ceil((new Date(topPrediction.fail_timestamp).getTime() - now) / 86400000) : '-'}d
                       </span>
                       <span className="sub-label">{topPrediction.description}</span>
                       <span className="sub-label">{Math.round(topPrediction.certainty * 100)}% confidence</span>
