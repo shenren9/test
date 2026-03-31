@@ -115,6 +115,13 @@ export default async function Dashboard() {
   const upcomingAlert = uncompletedAlerts.find((alert: Prediction) => new Date(alert.fail_timestamp).getTime() > Date.now());
   const daysUntilNextAlert = upcomingAlert ? Math.ceil((new Date(upcomingAlert.fail_timestamp)
   .getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+  const allIncompleteAlerts = safeAlerts.filter((alert: Prediction) => !alert.completed);
+  let predictedDowntime = 0;
+  allIncompleteAlerts.forEach((alert: Prediction) => {
+    if (alert.kind === "Y1") predictedDowntime += 3;
+    else if (alert.kind === "Y2") predictedDowntime += 3;
+    else if (alert.kind === "Spike") predictedDowntime += 3;
+  });
 
   return (
     <main className="home-dashboard">
@@ -138,7 +145,7 @@ export default async function Dashboard() {
               </div>
               <div className="stat-box">
                 <span className="stat-label">Predicted Downtime</span>
-                <span className="stat-value">3h</span>
+                <span className="stat-value">{predictedDowntime}h</span>
               </div>
             </div>
             <div className="overview-chart">

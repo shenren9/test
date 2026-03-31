@@ -17,7 +17,7 @@ export const Heatmap = ({ predictions, initialMachineId, hydrated }: HeatmapProp
   const heatmapData = useMemo(() => {
     const data = [];
     if (!hydrated) {
-      for (let i = 0; i < 91; i++) data.push({ day: i, value: 0 });
+      for (let i = 0; i < 91; i++) data.push({ week: i, value: 0 });
       return data;
     }
     const now = new Date();
@@ -30,14 +30,15 @@ export const Heatmap = ({ predictions, initialMachineId, hydrated }: HeatmapProp
         const failDay = new Date(failDate.getFullYear(), failDate.getMonth(), failDate.getDate());
         const diffTime = today.getTime() - failDay.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays >= 0 && diffDays <= 90) {
-          counts[90 - diffDays] += 1;
+        const diffWeeks = Math.floor(diffDays / 7);
+        if (diffWeeks >= 0 && diffWeeks <= 90) {
+          counts[90 - diffWeeks] += 1;
         }
       }
     });
 
     for (let i = 0; i < 91; i++) {
-      data.push({ day: i, value: counts[i] });
+      data.push({ week: i, value: counts[i] });
     }
     return data;
   }, [predictions, hydrated]);
@@ -55,13 +56,13 @@ export const Heatmap = ({ predictions, initialMachineId, hydrated }: HeatmapProp
   return (
     <div className="widget common-issues-heatmap">
       <div className="heatmap-header">
-        <h2>Failure Alerted Frequency (Last 90 Days)</h2>
+        <h2>Failure Alerted Frequency (Last 90 Weeks)</h2>
       </div>
       <div className="heatmap-grid-container">
         <div className="heatmap-grid">
           {heatmapData.map((data) => (
             <div
-              key={data.day}
+              key={data.week}
               className={`heatmap-cell ${getColorClass(data.value)} cursor-pointer`}
               title={`Activity level: ${data.value}`}
               onClick={() => {
