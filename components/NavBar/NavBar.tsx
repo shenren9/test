@@ -47,8 +47,10 @@ export const NavBar = () => {
             </Link>
           ))}
         </div>
-        <Link href="/settings" className="settings-trigger flex items-center justify-center">
-          <IoMdSettings size={18} />
+        <Link href="/settings">
+          <button className="settings-trigger">
+            <IoMdSettings size={18} />
+          </button>
         </Link>
       </nav>
     </div>

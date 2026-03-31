@@ -115,7 +115,7 @@ export default function MachinePageClient({
               {comparedData.length > 0 && (
                 <div className="flex gap-2 mb-3 flex-wrap">
                   {comparedData.map(cmd => (
-                        <div key={cmd.machine} className="flex items-center gap-2 bg-[#e8f4f8] text-[#2b5a7a] px-3 py-1.5 text-xs shadow-sm">
+                    <div key={cmd.machine} className="flex items-center gap-2 bg-[#e8f4f8] text-[#2b5a7a] px-3 py-1.5 text-xs shadow-sm">
                       <span>{cmd.machine}</span>
                       <button 
                         onClick={() => handleRemoveCompare(cmd.machine)} 
