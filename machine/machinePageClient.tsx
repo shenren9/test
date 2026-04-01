@@ -154,7 +154,7 @@ export default function MachinePageClient({
                   </select>
                 </div>
 
-                <div className="sensor-selector mb-0">
+<               div className="sensor-selector mb-0">
                   <label>Compare:</label>
                   <select 
                     value=""
@@ -165,8 +165,27 @@ export default function MachinePageClient({
                     <option value="" disabled>
                       {isFetchingCompare ? "Loading..." : "Select machine..."}
                     </option>
+                    {groups.map(group => {
+                      const groupMachines = machines.filter(
+                        m => m.group_id === group.id && 
+                             m.name !== initialMachineId && 
+                             !comparedData.some(cmd => cmd.machine === m.name)
+                      );
+                      
+                      if (groupMachines.length === 0) return null;
+                      
+                      return (
+                        <optgroup key={group.id} label={group.name}>
+                          {groupMachines.map(m => (
+                            <option key={m.id} value={m.name}>
+                              {m.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      );
+                    })}
                     {machines
-                      .filter(m => m.name !== initialMachineId && !comparedData.some(cmd => cmd.machine === m.name))
+                      .filter(m => !m.group_id && m.name !== initialMachineId && !comparedData.some(cmd => cmd.machine === m.name))
                       .map(m => (
                         <option key={m.id} value={m.name}>
                           {m.name}

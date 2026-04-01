@@ -115,13 +115,6 @@ export default async function Dashboard() {
   const upcomingAlert = uncompletedAlerts.find((alert: Prediction) => new Date(alert.fail_timestamp).getTime() > Date.now());
   const daysUntilNextAlert = upcomingAlert ? Math.ceil((new Date(upcomingAlert.fail_timestamp)
   .getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
-  const allIncompleteAlerts = safeAlerts.filter((alert: Prediction) => !alert.completed);
-  let predictedDowntime = 0;
-  allIncompleteAlerts.forEach((alert: Prediction) => {
-    if (alert.kind === "Y1") predictedDowntime += 3;
-    else if (alert.kind === "Y2") predictedDowntime += 3;
-    else if (alert.kind === "Spike") predictedDowntime += 3;
-  });
 
   return (
     <main className="home-dashboard">
@@ -129,10 +122,10 @@ export default async function Dashboard() {
         <div className="overview-card">
           <h2 className="card-title">Overview</h2>
           <div className="overview-content">
-            <div className="overview-stats">
+              <div className="overview-stats">
               <div className="stat-box">
-                <span className="stat-label">Equipment Uptime</span>
-                <span className="stat-value">93.7%</span>
+                <span className="stat-label">Days Since Last Train</span>
+                <span className="stat-value">253</span>
               </div>
               <div className="stat-box">
                 <span className="stat-label">High Priority Alerts</span>
@@ -144,8 +137,8 @@ export default async function Dashboard() {
                 <span className="stat-detail">{upcomingAlert ? `${upcomingAlert.machine_name} : ${upcomingAlert.description}` : 'No alerts'}</span>
               </div>
               <div className="stat-box">
-                <span className="stat-label">Predicted Downtime</span>
-                <span className="stat-value">{predictedDowntime}h</span>
+                <span className="stat-label">Model Accuracy</span>
+                <span className="stat-value">67%</span>
               </div>
             </div>
             <div className="overview-chart">
@@ -179,19 +172,6 @@ export default async function Dashboard() {
             {machines.map((machine) => (
               <MachineItem key={machine.id} machine={machine}></MachineItem>
             ))}
-          </div>
-        </div>
-        <div className="model-card">
-          <h2 className="card-title">Prediction Stats</h2>
-          <div className="model-stats">
-            <div className="stat-box">
-              <span className="stat-label">Days Since Last Train</span>
-              <span className="stat-value">253</span>
-            </div>
-            <div className="stat-box">
-              <span className="stat-label">Model Accuracy</span>
-              <span className="stat-value">67%</span>
-            </div>
           </div>
         </div>
       </div>
