@@ -16,6 +16,7 @@ interface Prediction {
   description: string;
   machine_name: string;
   completed: boolean;
+  verification_status: boolean | null;
 }
 
 interface MachineRow {
@@ -136,6 +137,10 @@ export default async function Dashboard() {
   const upcomingAlert = uncompletedAlerts.find((alert: Prediction) => new Date(alert.fail_timestamp).getTime() > Date.now());
   const daysUntilNextAlert = upcomingAlert ? Math.ceil((new Date(upcomingAlert.fail_timestamp)
   .getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+  const pastVerifiedAlerts = safeAlerts.filter((alert: Prediction) => 
+    alert.verification_status !== null && new Date(alert.fail_timestamp).getTime() < Date.now());
+  const positiveAlerts = pastVerifiedAlerts.filter((alert: Prediction) => alert.verification_status === true);
+  const modelAccuracy = pastVerifiedAlerts.length > 0 ? Math.round((positiveAlerts.length / pastVerifiedAlerts.length) * 100) : 0;
 
   return (
     <main className="home-dashboard">
@@ -143,14 +148,14 @@ export default async function Dashboard() {
         <div className="overview-card">
           <h2 className="card-title">Overview</h2>
           <div className="overview-content">
-            <div className="overview-stats">
+              <div className="overview-stats">
               <div className="stat-box">
                 <span className="stat-label">High Priority Alerts</span>
                 <span className="stat-value">{uncompletedAlerts.length}</span>
               </div>
               <div className="stat-box">
                 <span className="stat-label">Model Accuracy</span>
-                <span className="stat-value">67%</span>
+                <span className="stat-value">{modelAccuracy}%</span>
               </div>
               <div className="stat-box">
                 <span className="stat-label">Next Failure</span>

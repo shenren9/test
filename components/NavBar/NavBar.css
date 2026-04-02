@@ -39,6 +39,6 @@
 /* Hide service name at low width */
 @media (max-width: 680px) {
     .logos span {
-        display: hidden;
+        display: none;
     }
 }
