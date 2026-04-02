@@ -134,6 +134,7 @@ export async function updateSapMappingTargets(
              sensorfact_group_id = EXCLUDED.sensorfact_group_id`,
       [sapId, targetMachineId, targetGroupId]
     );
+    await pool.query("DELETE FROM sap_to_sensorfact_mapping WHERE sensorfact_machine_id IS NULL AND sensorfact_group_id IS NULL");
     return { ok: true };
   } catch (e) {
     console.error("updateSapMappingTargets:", e);

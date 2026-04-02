@@ -42,7 +42,7 @@ export const DonutChart = ({ chartData, position = "bottom" }: PieChartProps) =>
           const width = context.chart.width;
           const size = Math.round(width / 20); 
           return {
-            size: size < 8 ? 8 : size > 11 ? 11 : size,
+            size: size < 8 ? 8 : size > 18 ? 18 : size,
             weight: 'bold'
           };
         }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { AlertItem } from "@/app/components/AlertItem/AlertItem";
 
 interface Prediction {
-  id: number;
+  id: string;
   kind: string;
   certainty: number;
   fail_timestamp: Date;
@@ -23,6 +23,15 @@ export default function DashboardAlertsList({ alerts }: { alerts: Prediction[] }
   useEffect(() => {
     setNow(Date.now());
     setHydrated(true);
+  }, []);
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 670);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   const incompleteAlerts = alerts.filter((a) => !a.completed);
@@ -54,6 +63,7 @@ export default function DashboardAlertsList({ alerts }: { alerts: Prediction[] }
             {incompleteAlerts.map((alert) => (
               <AlertItem
                 key={alert.id}
+                id={alert.id}
                 machineName={alert.machine_name}
                 fault={alert.description}
                 severity={alert.kind as "Y1" | "Y2" | "Spike"}
@@ -61,6 +71,8 @@ export default function DashboardAlertsList({ alerts }: { alerts: Prediction[] }
                 created={alert.created_at}
                 failDate={alert.fail_timestamp}
                 now={now}
+                isMobile={isMobile}
+                completed={alert.completed}
               />
             ))}
           </div>
@@ -83,6 +95,7 @@ export default function DashboardAlertsList({ alerts }: { alerts: Prediction[] }
             {completedAlerts.map((alert) => (
               <AlertItem
                 key={alert.id}
+                id={alert.id}
                 machineName={alert.machine_name}
                 fault={alert.description}
                 severity={alert.kind as "Y1" | "Y2" | "Spike"}
@@ -90,6 +103,8 @@ export default function DashboardAlertsList({ alerts }: { alerts: Prediction[] }
                 created={alert.created_at}
                 failDate={alert.fail_timestamp}
                 now={now}
+                isMobile={isMobile}
+                completed={alert.completed}
               />
             ))}
           </div>

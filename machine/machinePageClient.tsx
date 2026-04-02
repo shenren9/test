@@ -154,7 +154,7 @@ export default function MachinePageClient({
                   </select>
                 </div>
 
-<               div className="sensor-selector mb-0">
+                <div className="sensor-selector mb-0">
                   <label>Compare:</label>
                   <select 
                     value=""
@@ -196,22 +196,41 @@ export default function MachinePageClient({
               </div>
             </div>
             <div className="stats-column">
-              <div className="prediction-grid">
-                <div className="prediction-box purple">
-                  <span className="label">Predicted Failure</span>
+              <div className="widget flex flex-col h-full">
+                <div className="widget-header mb-4">
+                  <h2>Next Predicted Failure</h2>
+                </div>
+                <div className="flex-1 flex flex-col min-h-0">
                   {topPrediction ? (
-                    <>
-                      <span className="value">
-                        {hydrated ? Math.ceil((new Date(topPrediction.fail_timestamp).getTime() - now) / 86400000) : '-'}d
-                      </span>
-                      <span className="sub-label">{topPrediction.description}</span>
-                      <span className="sub-label">{Math.round(topPrediction.certainty * 100)}% confidence</span>
-                    </>
+                    <div className="flex flex-col h-full gap-4">
+                      <div className="flex-1 flex flex-col justify-center items-center bg-gray-50 rounded-lg border border-gray-200 p-4">
+                        <span className="text-gray-500 font-semibold mb-2">Estimated Time to Failure</span>
+                        <div className="text-5xl font-bold text-[#9593FC]">
+                          {hydrated ? Math.ceil((new Date(topPrediction.fail_timestamp).getTime() - now) / 86400000) : '-'} <span className="text-2xl text-gray-500 font-medium">Days</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 shrink-0">
+                        <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 flex flex-col justify-center min-h-[90px]">
+                          <span className="text-xs text-gray-500 font-semibold mb-1">Confidence Score</span>
+                          <span className="text-xl font-bold text-[#9593FC]">
+                            {Math.round(topPrediction.certainty * 100)}%
+                          </span>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 flex flex-col justify-center min-h-[90px]">
+                          <span className="text-xs text-gray-500 font-semibold mb-1">Detected Fault</span>
+                          <span className="text-sm font-medium text-gray-800 line-clamp-2" title={topPrediction.description}>
+                            {topPrediction.description}
+                          </span>
+                          <span className="text-xs text-[#9593FC] font-semibold mt-1">
+                            Severity: {topPrediction.kind}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
-                    <>
-                      <span className="value">-</span>
-                      <span className="sub-label">No prediction available</span>
-                    </>
+                    <div className="flex-1 bg-gray-50 rounded-lg flex flex-col items-center justify-center border border-dashed border-gray-300">
+                      <span className="text-gray-500 font-medium">No predicted failures</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -222,34 +241,36 @@ export default function MachinePageClient({
               <div className="widget-header">
                 <h2>Alert History</h2> 
               </div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Description</th>
-                    <th>Severity</th>
-                    <th>Confidence</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {machinePreds.length > 0 ? (
-                    machinePreds.map((p) => (
-                      <tr key={p.id}>
-                        <td>{hydrated ? new Date(p.created_at).toLocaleDateString() : '-/-/----'}</td>
-                        <td>{hydrated ? new Date(p.created_at).toLocaleTimeString() : '-:--:--'}</td>
-                        <td>{p.description}</td>
-                        <td>{p.kind}</td>
-                        <td>{Math.round(p.certainty * 100)}%</td>
-                      </tr>
-                    ))
-                  ) : (
+              <div className="overflow-y-auto flex-1 min-h-0">
+                <table>
+                  <thead className="sticky top-0 bg-white shadow-sm">
                     <tr>
-                      <td colSpan={5}>No alert history available</td>
+                      <th>Date</th>
+                      <th>Time</th>
+                      <th>Description</th>
+                      <th>Severity</th>
+                      <th>Confidence</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {machinePreds.length > 0 ? (
+                      machinePreds.map((p) => (
+                        <tr key={p.id}>
+                          <td>{hydrated ? new Date(p.created_at).toLocaleDateString() : '-/-/----'}</td>
+                          <td>{hydrated ? new Date(p.created_at).toLocaleTimeString() : '-:--:--'}</td>
+                          <td>{p.description}</td>
+                          <td>{p.kind}</td>
+                          <td>{Math.round(p.certainty * 100)}%</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5}>No alert history available</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <Heatmap 

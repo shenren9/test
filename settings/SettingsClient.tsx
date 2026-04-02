@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import { handleSubscribeAction, deletePushSubscriptionAction, getDevicePushSubscription } from "@/app/actions/notifications";
 import { getUserSettings, updateUserSettings } from "@/lib/actions";
+import { authClient } from "@/lib/auth-client";
 
 import styles from './settings.module.css'
 
@@ -114,9 +115,7 @@ function ApproveUser({ email, id, admin, approved }: { email: string; id: string
   return (
     <li style={{ display: "flex", alignItems: "center", gap: "12px" }}>
       <span>{email}</span>
-      {(status === "idle" || status === "error") && (
-        buttons
-      )}
+      {(status === "idle" || status === "error") && buttons}
       {result}
     </li>
   );
@@ -138,7 +137,16 @@ export default function SettingsClient({
   const [prefs, setPrefs] = useState({
     push: false,
     email: false,
+    y1: false,
+    y2: false,
   });
+
+  const [editName, setEditName] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [accountError, setAccountError] = useState<string | null>(null);
+  const [editingAccount, setEditingAccount] = useState(false);
 
   // State for logic
   const [vapidKey, setVapidKey] = useState<string | null>(null);
@@ -162,11 +170,7 @@ export default function SettingsClient({
   // Fetch User Settings from DB on mount (to set initial checkbox state)
   useEffect(() => {
     async function loadSettings() {
-      if (!session?.user?.id) {
-        setLoading(false);
-        return;
-      }
-
+      if (!session?.user?.id) { setLoading(false); return; }
       try {
         const { ok, user } = await getUserSettings(session.user.id);
 
@@ -192,6 +196,8 @@ export default function SettingsClient({
           setPrefs({
             push: isPushEnabled,
             email: user.email_notifications || false,
+            y1: user.y1_notifications || false,
+            y2: user.y2_notifications || false,
           });
         }
       } catch (err) {
@@ -200,10 +206,8 @@ export default function SettingsClient({
         setLoading(false);
       }
     }
-
     loadSettings();
   }, [session?.user?.id]);
-
 
   // Helper: Trigger the Browser Push Subscription
   const subscribeToPush = async () => {
@@ -217,8 +221,8 @@ export default function SettingsClient({
         await navigator.serviceWorker.ready;
 
         const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlB64ToUint8Array(vapidKey),
+          userVisibleOnly: true,
+          applicationServerKey: urlB64ToUint8Array(vapidKey),
         });
 
         // Save subscription object to DB
@@ -228,7 +232,7 @@ export default function SettingsClient({
         alert("Failed to enable push notifications on this device.");
       }
     } else {
-        alert("Notifications permission denied. Please reset permissions in your browser settings.");
+      alert("Notifications permission denied. Please reset permissions in your browser settings.");
     }
   };
 
@@ -263,7 +267,9 @@ export default function SettingsClient({
         session.user.name || "",
         session.user.email || "",
         prefs.email,
-        prefs.push
+        prefs.push,
+        prefs.y1,
+        prefs.y2,
       );
 
       if (!result.ok) throw new Error(result.error);
@@ -281,8 +287,8 @@ export default function SettingsClient({
       const subscription = await registration.pushManager.getSubscription();
 
       setPrefs({
+        ...prefs,
         push: !!subscription,
-        email: prefs.email,
       });
 
       alert("Settings saved successfully!");
@@ -293,6 +299,7 @@ export default function SettingsClient({
       setSaving(false);
     }
   };
+
   const handleToggle = (id: keyof typeof prefs) => {
     setPrefs((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -394,17 +401,85 @@ export default function SettingsClient({
     }
   };
 
+  const handleAccountSave = async () => {
+    if (!session?.user?.id) return;
+    setAccountSaving(true);
+    setAccountError(null);
+    try {
+      if (editName && editName !== session.user.name) {
+        await authClient.updateUser({ name: editName });
+      }
+      if (currentPassword && newPassword) {
+        await authClient.changePassword({
+          currentPassword,
+          newPassword,
+          revokeOtherSessions: false,
+        });
+      }
+      alert("Account updated successfully!");
+    } catch (err: any) {
+      setAccountError(err?.message || "Failed to update account");
+    } finally {
+      setAccountSaving(false);
+    }
+  };
+
+
   return (
-        <main>
+    <main style={{ height: 'calc(100vh - 12vh)', padding: '10px 15px 30px 15px' }}>
       <div className={styles.pageGrid}>
         <div className={styles.sidebar}>
           <BackButton />
         </div>
         <div className={styles.body}>
+          <div className={styles.mobileBack}>
+            <BackButton />
+          </div>
           <div className={styles.subheader}>
             <h1 className={styles.title}>Settings</h1>
           </div>
           <div className={styles.topRow}>
+            <div className={styles.accountInfo}>
+              <h1 className={styles.bodyTitle}>Account Information</h1>
+              <div className={styles.accountInfoContent}>
+                <p><strong>Name:</strong> {session?.user?.name ?? "—"}</p>
+                <p><strong>Email:</strong> {session?.user?.email ?? "—"}</p>
+              </div>
+              <button className={styles.saveButton} onClick={() => setEditingAccount(!editingAccount)}>
+                {editingAccount ? "Cancel" : "Edit"}
+              </button>
+
+              {editingAccount && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px', maxWidth: '400px' }}>
+                  <input
+                    type="text"
+                    placeholder={`Name (current: ${session?.user?.name ?? "—"})`}
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    className="px-3 py-2 rounded-md border border-gray-300 text-sm outline-none w-full"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Current password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    className="px-3 py-2 rounded-md border border-gray-300 text-sm outline-none w-full"
+                  />
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="px-3 py-2 rounded-md border border-gray-300 text-sm outline-none w-full"
+                  />
+                  {accountError && <p style={{ color: 'red', fontSize: '0.85rem' }}>{accountError}</p>}
+                  <button className={styles.saveButton} onClick={handleAccountSave} disabled={accountSaving}>
+                    {accountSaving ? "Saving..." : "Update Account"}
+                  </button>
+                </div>
+              )}
+
+            </div>
             <div className={styles.notifications}>
               <h1 className={styles.bodyTitle}>Notifications</h1>
               <fieldset className={styles.bodyContent} disabled={loading || saving}>
@@ -528,7 +603,6 @@ export default function SettingsClient({
           <div className={styles.logOut}>
             <LogOutButton />
           </div>
-
         </div>
       </div>
     </main>

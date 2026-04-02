@@ -1,8 +1,11 @@
 "use client";
-
 import "./AlertItem.css";
+import Link from "next/link";
+import {useState, useEffect} from 'react';
+
 
 interface AlertItemProps {
+  id: string;
   machineName: string;
   fault: string;
   severity: "Y1" | "Y2" | "Spike";
@@ -10,10 +13,15 @@ interface AlertItemProps {
   created: Date;
   failDate: Date;
   now: number;
+  isMobile: boolean;
+  completed: boolean;
 }
 
-export const AlertItem = ({ machineName, fault, severity, percentage, created, failDate, now}: AlertItemProps) => {
+export const AlertItem = ({ id, machineName, fault, severity, percentage, created, failDate, now, isMobile, completed}: AlertItemProps) => {
+  
   percentage = Math.round(percentage * 100)
+
+  const href = isMobile ? `/alert_view/mobile_alert_info?id=${id}` : `/alert_view?alertId=${id}&completed=${completed}`;
 
   const styles = {
     Y2: {
@@ -67,35 +75,37 @@ export const AlertItem = ({ machineName, fault, severity, percentage, created, f
   const current = styles[severity];
 
   return (
-    <div className={`alert-card ${current.card}`}>
-      <div className="alert-header">
-        <div className="header-left">
-          <span className="machine-name">{machineName}</span>
-          <span className="prediction-age">{getRelativeTime(created)}</span>
-        </div>
-        <div className={`severity-badge ${current.tag}`}>
-          {current.label} {getRelativeTime(failDate)}
-        </div>
-      </div>
-
-      <p className="fault-text">{fault}</p>
-
-      <div className="stats-container">
-        <div className="stats-row">
-          <span className="progress-label">Fault Probability</span>
-          <div className="stat-meta">
-            <span className="prediction-text">{percentage}%</span>
-            <span className="prediction-text"></span>
+    <Link href={href}>
+      <div className={`alert-card ${current.card}`}>
+        <div className="alert-header">
+          <div className="header-left">
+            <span className="machine-name">{machineName}</span>
+            <span className="prediction-age">{getRelativeTime(created)}</span>
+          </div>
+          <div className={`severity-badge ${current.tag}`}>
+            {current.label} {getRelativeTime(failDate)}
           </div>
         </div>
 
-        <div className="progress-track">
-          <div
-            className="progress-fill"
-            style={{ width: `${percentage}%` }}
-          />
+        <p className="fault-text">{fault}</p>
+
+        <div className="stats-container">
+          <div className="stats-row">
+            <span className="progress-label">Fault Probability</span>
+            <div className="stat-meta">
+              <span className="prediction-text">{percentage}%</span>
+              <span className="prediction-text"></span>
+            </div>
+          </div>
+
+          <div className="progress-track">
+            <div
+              className="progress-fill"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };

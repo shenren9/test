@@ -1,5 +1,4 @@
 @import "tailwindcss";
-
 @layer components {
   .mobile-container {
     @apply relative w-full;
@@ -47,5 +46,24 @@
   
   .machine-button.last-machine {
     @apply rounded-b-[8px];
+  }
+
+  /* Group reordering arrows */
+  .group-header-inner {
+    @apply flex items-center justify-between;
+  }
+
+  .group-name {
+    @apply flex-1 text-center;
+  }
+
+  .group-arrows {
+    @apply flex flex-col gap-[2px];
+  }
+
+  .arrow-btn {
+    @apply flex items-center justify-center w-5 h-4 rounded text-[9px] leading-none
+           text-white/60 hover:text-white hover:bg-white/20
+           transition-colors duration-150
   }
 }

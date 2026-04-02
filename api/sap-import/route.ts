@@ -40,6 +40,13 @@ export async function POST(req: Request) {
             );
         }
 
+        const positiveAlertsRes = await pool.query(`
+            SELECT p.id, p.kind, p.fail_timestamp, p.created_at, p.description, m.name AS machine_name
+            FROM predictions p
+            JOIN machines m ON m.id = p.machine_id
+            WHERE p.verification_status = TRUE
+        `);
+
         const client = await pool.connect();
         try {
             await client.query("BEGIN");
@@ -63,16 +70,6 @@ export async function POST(req: Request) {
                 const wasInserted = Boolean(r.rows?.[0]?.inserted);
                 if (wasInserted) inserted++;
                 else updated++;
-
-                const flRaw = String(row["Functional Location"] ?? "").trim();
-                if (flRaw) {
-                    await client.query(
-                        `INSERT INTO sap_to_sensorfact_mapping (sap_machine_id, sensorfact_machine_id, sensorfact_group_id)
-                         VALUES ($1, NULL, NULL)
-                         ON CONFLICT (sap_machine_id) DO NOTHING`,
-                        [id]
-                    );
-                }
             };
 
             if (isCsv) {
@@ -108,6 +105,18 @@ export async function POST(req: Request) {
                 for (const row of rows) {
                     await handleRow(row);
                 }
+            }
+
+            for (const alert of positiveAlertsRes.rows) {
+                await handleRow({
+                    "Notification": `ALERT-${alert.id}`,
+                    "Functional Location": alert.machine_name,
+                    "Description": alert.description,
+                    "Basic start date": new Date(alert.fail_timestamp).toISOString().slice(0, 10),
+                    "Basic start time": new Date(alert.fail_timestamp).toTimeString().slice(0, 8),
+                    "Order Type": alert.kind,
+                    "Created on": new Date(alert.created_at).toISOString().slice(0, 10),
+                });
             }
 
             await client.query("NOTIFY new_sap_data");

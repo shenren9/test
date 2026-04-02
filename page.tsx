@@ -1,14 +1,14 @@
-import { DonutChart } from "./components/DonutChart/DonutChart";
 import { MachineItem } from "./components/MachineItem/MachineItem";
 import DashboardAlertsList from "./components/DashboardAlertsList";
 import { requireSession } from "@/lib/require-session";
 import { pool } from "@/lib/db";
 import { fetchMachinePredictions } from "@/lib/actions";
+import { DonutChart } from "./components/DonutChart/DonutChartWrapper";
 
 import "./page.css";
 
 interface Prediction {
-  id: number;
+  id: string;
   kind: string;
   certainty: number;
   fail_timestamp: Date;
@@ -102,14 +102,35 @@ async function getDonutData() {
   }
 }
 
+async function getModelData() {
+  const query = `
+    SELECT created_at FROM sap s
+    LIMIT 1
+  `;
+  try {
+    const result = await pool.query(query);
+    const row = result.rows[0];
+
+    if (!row) return null;
+
+    const mins = Date.now() - new Date(row.created_at).getTime(); 
+    const daysElapsed = Math.round((mins / (1000 * 60 * 60 * 24)) * 100) / 100;
+    return daysElapsed;
+  } catch (err) {
+    console.error("GetModelData error:", err);
+    return null;
+  }
+}
+
 export default async function Dashboard() {
   await requireSession("/");
 
   const machines = await getMachineData();
   const status_counts = await getDonutData();
   const { ok: predictionsOk, data: allAlerts } = await fetchMachinePredictions();
+  const modelTrained = await getModelData();
   const safeAlerts = predictionsOk && allAlerts ? allAlerts : [];
-  const highPriorityAlerts = safeAlerts.filter((alert: Prediction) => alert.kind === "Y1")
+  const highPriorityAlerts = safeAlerts.filter((alert: Prediction) => alert.kind === "Y2" && alert.completed === false && new Date(alert.fail_timestamp).getTime() > Date.now())
   .sort((a: Prediction, b: Prediction) => (new Date(a.fail_timestamp).getTime() - new Date(b.fail_timestamp).getTime()));
   const uncompletedAlerts = highPriorityAlerts.filter((alert: Prediction) => !alert.completed);
   const upcomingAlert = uncompletedAlerts.find((alert: Prediction) => new Date(alert.fail_timestamp).getTime() > Date.now());
@@ -122,14 +143,14 @@ export default async function Dashboard() {
         <div className="overview-card">
           <h2 className="card-title">Overview</h2>
           <div className="overview-content">
-              <div className="overview-stats">
-              <div className="stat-box">
-                <span className="stat-label">Days Since Last Train</span>
-                <span className="stat-value">253</span>
-              </div>
+            <div className="overview-stats">
               <div className="stat-box">
                 <span className="stat-label">High Priority Alerts</span>
                 <span className="stat-value">{uncompletedAlerts.length}</span>
+              </div>
+              <div className="stat-box">
+                <span className="stat-label">Model Accuracy</span>
+                <span className="stat-value">67%</span>
               </div>
               <div className="stat-box">
                 <span className="stat-label">Next Failure</span>
@@ -137,8 +158,8 @@ export default async function Dashboard() {
                 <span className="stat-detail">{upcomingAlert ? `${upcomingAlert.machine_name} : ${upcomingAlert.description}` : 'No alerts'}</span>
               </div>
               <div className="stat-box">
-                <span className="stat-label">Model Accuracy</span>
-                <span className="stat-value">67%</span>
+                <span className="stat-label">Days Since Last Train</span>
+                <span className="stat-value">{modelTrained !== null ? `${modelTrained}d` : '-'}</span>
               </div>
             </div>
             <div className="overview-chart">

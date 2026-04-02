@@ -32,7 +32,7 @@
 }
 
 .bento-grid {
-    @apply grid w-full gap-4 grid-cols-5 grid-rows-2 flex-1 min-h-0;
+    @apply grid w-full gap-8 grid-cols-5 grid-rows-2 flex-1 min-h-0;
     grid-template-rows: auto 1fr;
 }
 
@@ -85,25 +85,11 @@
 }
 
 .machines-card {
-    @apply col-span-2 row-span-1 bg-white rounded-2xl shadow-lg p-5 flex flex-col overflow-hidden min-h-0;
+    @apply col-span-3 row-span-1 bg-white rounded-2xl shadow-lg p-5 flex flex-col overflow-hidden min-h-0;
 }
 
 .machines-list {
     @apply space-y-2 overflow-y-auto;
-}
-
-.model-card {
-    grid-column: 3 / 4;
-    grid-row: 2 / 3;
-    @apply col-span-1 row-span-1 bg-white rounded-2xl shadow-lg p-5 flex flex-col min-h-0 overflow-hidden;
-}
-
-.model-stats {
-    @apply flex flex-col gap-3 overflow-y-auto flex-1 min-h-0;
-}
-
-.model-card .model-stats .stat-box {
-    @apply flex-shrink-0 flex flex-col justify-center bg-gray-100 rounded-xl p-3;
 }
 
 /* MOBILE BREAKPOINT */

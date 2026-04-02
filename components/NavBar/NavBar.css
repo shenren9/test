@@ -32,9 +32,13 @@
     @apply p-2 rounded-full bg-white/10 hover:bg-white/20 transition text-white;
 }
 
+.logos {
+    @apply flex flex-col items-start gap-1 min-w-0 shrink;
+}
+
 /* Hide service name at low width */
 @media (max-width: 680px) {
     .logos span {
-        display: none;
+        display: hidden;
     }
 }

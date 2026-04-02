@@ -2,12 +2,12 @@
 
 html,
 body {
-    overscroll-behavior: none;
+    overscroll-behavior: auto;
     background: linear-gradient(to right, #7db4d6, #35699f);
     color: #000000;
     font-family: Arial, sans-serif;
     height: 100vh;
-    overflow-y: hidden;
+    overflow-y: auto;
 }
 
 header {

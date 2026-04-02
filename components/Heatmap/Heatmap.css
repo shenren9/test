@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 .common-issues-heatmap {
-    @apply col-span-2 bg-white p-6 rounded-2xl flex flex-col gap-4;
+    @apply col-span-2 bg-white p-6 rounded-2xl flex flex-col gap-4 min-h-0 overflow-hidden;
 }
 
 .heatmap-header h2 {
