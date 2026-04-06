@@ -41,8 +41,8 @@ async function getMachineData() {
     FROM machines m
     LEFT JOIN (
       SELECT DISTINCT ON (machine_id) machine_id, kind
-      FROM predictions WHERE completed = False
-      ORDER BY machine_id, created_at DESC
+      FROM predictions WHERE completed = False AND kind IN ('Y1', 'Y2')
+      ORDER BY machine_id, CASE kind WHEN 'Y2' THEN 1 WHEN 'Y1' THEN 2 ELSE 3 END ASC, created_at DESC
     ) p ON m.id = p.machine_id
     ORDER BY m.id ASC
   `;
@@ -70,8 +70,8 @@ async function getDonutData() {
     FROM machines m
     LEFT JOIN (
         SELECT DISTINCT ON (machine_id) machine_id, kind
-        FROM predictions WHERE completed = False
-        ORDER BY machine_id, created_at DESC
+        FROM predictions WHERE completed = False AND kind IN ('Y1', 'Y2')
+        ORDER BY machine_id, CASE kind WHEN 'Y2' THEN 1 WHEN 'Y1' THEN 2 ELSE 3 END ASC, created_at DESC
     ) p ON m.id = p.machine_id
     GROUP BY status;
   `;
@@ -85,7 +85,6 @@ async function getDonutData() {
       { key: "GOOD", label: "Stable" },
       { key: "Y2", label: "Y2" },
       { key: "Y1", label: "Y1" },
-      { key: "Spike", label: "Spikes" },
     ];
 
     return order.map((item) => ({
@@ -98,7 +97,6 @@ async function getDonutData() {
       { machine: "Stable", value: 0 },
       { machine: "Y2", value: 0 },
       { machine: "Y1", value: 0 },
-      { machine: "Spikes", value: 0 },
     ];
   }
 }

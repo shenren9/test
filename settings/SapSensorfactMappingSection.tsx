@@ -69,12 +69,12 @@ function MappingRowEditor({
   return (
     <tr>
       <td>
-        <code style={{ wordBreak: "break-all" }}>{row.sapMachineId}</code>
+        <code style={{ wordBreak: "break-all", fontSize: "0.85rem" }}>{row.sapMachineId}</code>
       </td>
       <td>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-            <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: "0.85rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className={styles.mappingRadioGroup} style={{ padding: 0 }}>
+            <label className={styles.mappingRadioLabel}>
               <input
                 type="radio"
                 name={`kind-${row.sapMachineId}`}
@@ -83,7 +83,7 @@ function MappingRowEditor({
               />
               Group
             </label>
-            <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: "0.85rem" }}>
+            <label className={styles.mappingRadioLabel}>
               <input
                 type="radio"
                 name={`kind-${row.sapMachineId}`}
@@ -95,9 +95,10 @@ function MappingRowEditor({
           </div>
           {targetKind === "group" ? (
             <select
+              className={styles.mappingSelect}
               value={groupId}
               onChange={(e) => setGroupId(e.target.value)}
-              style={{ maxWidth: 280, padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+              style={{ maxWidth: 280 }}
             >
               <option value="">None</option>
               {groups.map((g) => (
@@ -108,9 +109,10 @@ function MappingRowEditor({
             </select>
           ) : (
             <select
+              className={styles.mappingSelect}
               value={machineId}
               onChange={(e) => setMachineId(e.target.value)}
-              style={{ maxWidth: 280, padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc" }}
+              style={{ maxWidth: 280 }}
             >
               <option value="">None</option>
               {machines.map((m) => (
@@ -141,7 +143,7 @@ function MappingRowEditor({
             else onDone();
           }}
         >
-          Delete row
+          Delete
         </button>
       </td>
     </tr>
@@ -207,164 +209,171 @@ export function SapSensorfactMappingSection() {
   }
 
   return (
-    <div className={styles.importData}>
-      <h1 className={styles.bodyTitle}>SAP ↔ Sensorfact mapping</h1>
-      <p>
-        The key is derived from the SAP <strong>Functional Location</strong>.
-        Pick the exact key prefix to store, then link to one Sensorfact group or machine.
-      </p>
-      {loadError && (
-        <p style={{ color: "#c62828" }}>Error: {loadError}</p>
-      )}
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <>
-        {formError && (
-          <p style={{ color: "#c62828" }}>Error: {formError}</p>
+    <div className={styles.card}>
+      <h2 className={styles.cardTitle}>SAP / Sensorfact Mapping</h2>
+      <div className={styles.cardBody}>
+        <p style={{ margin: 0, fontSize: "1.05rem", fontWeight: 600, color: "#4b5563" }}>
+          The key is derived from the SAP <strong>Functional Location</strong>.
+          Pick the exact key prefix to store, then link to one Sensorfact group or machine.
+        </p>
+        {loadError && (
+          <p style={{ color: "#c62828", margin: 0 }}>Error: {loadError}</p>
         )}
-
-          <h2 className={styles.mappingFormHeading}>Add or update by location</h2>
-          <div className={styles.mappingAddRow}>
-            <label>
-              Functional location (from SAP)
-              <select
-                value={formFl}
-                onChange={(e) => {
-                  setFormFl(e.target.value);
-                  setFormFlPortion(e.target.value);
-                }}
-              >
-                <option value="">Select…</option>
-                {functionalLocations.map((fl) => (
-                  <option key={fl} value={fl}>
-                    {fl}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Key
-              <select
-                value={formFlPortion}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setFormFlPortion(v);
-                }}
-                disabled={!formFl}
-              >
-                {!formFl ? (
-                  <option value="full">Select location first…</option>
-                ) : (
-                  availableFlPortions(formFl).map((d) => {
-                    return (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    );
-                  })
-                )}
-              </select>
-            </label>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-              <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: "0.85rem" }}>
-                <input
-                  type="radio"
-                  name="form-target-kind"
-                  checked={formTargetKind === "group"}
-                  onChange={() => setFormTargetKind("group")}
-                />
-                Group
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="form-target-kind"
-                  checked={formTargetKind === "machine"}
-                  onChange={() => setFormTargetKind("machine")}
-                />
-                Machine
-              </label>
-            </div>
-            {formTargetKind === "group" ? (
-              <label>
-                Sensorfact group
-                <select
-                  value={formGroupId}
-                  onChange={(e) => setFormGroupId(e.target.value)}
-                >
-                  <option value="">Select…</option>
-                  {groups.map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : (
-              <label>
-                Sensorfact machine
-                <select
-                  value={formMachineId}
-                  onChange={(e) => setFormMachineId(e.target.value)}
-                >
-                  <option value="">Select…</option>
-                  {machines.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {machineLabel(m)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+        {loading ? (
+          <p style={{ margin: 0 }}>Loading…</p>
+        ) : (
+          <>
+            {formError && (
+              <p style={{ color: "#c62828", margin: 0 }}>Error: {formError}</p>
             )}
-            <button
-              type="button"
-              className={styles.mappingAddButton}
-              disabled={
-                adding ||
-                !formFl ||
-                !(formTargetKind === "group" ? formGroupId : formMachineId)
-              }
-              onClick={handleFormSave}
-            >
-              {adding ? "Saving…" : "Save mapping"}
-            </button>
-          </div>
 
-          <h2 className={styles.mappingFormHeading}>Configured mappings</h2>
-          <div className={styles.mappingTableWrap}>
-            <table className={styles.mappingTable}>
-              <thead>
-                <tr>
-                  <th>Stored key</th>
-                  <th>Sensorfact target</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {mappings.length === 0 ? (
+            <h3 className={styles.mappingFormHeading}>Add or update by location</h3>
+            <div className={styles.mappingForm}>
+              <div className={styles.mappingFormRow}>
+                <div className={styles.mappingField}>
+                  <label>Functional location (from SAP)</label>
+                  <select
+                    className={styles.mappingSelect}
+                    value={formFl}
+                    onChange={(e) => {
+                      setFormFl(e.target.value);
+                      setFormFlPortion(e.target.value);
+                    }}
+                  >
+                    <option value="">Select…</option>
+                    {functionalLocations.map((fl) => (
+                      <option key={fl} value={fl}>
+                        {fl}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className={styles.mappingField}>
+                  <label>Key</label>
+                  <select
+                    className={styles.mappingSelect}
+                    value={formFlPortion}
+                    onChange={(e) => setFormFlPortion(e.target.value)}
+                    disabled={!formFl}
+                  >
+                    {!formFl ? (
+                      <option value="full">Select location first…</option>
+                    ) : (
+                      availableFlPortions(formFl).map((d) => {
+                        return (
+                          <option key={d} value={d}>
+                            {d}
+                          </option>
+                        );
+                      })
+                    )}
+                  </select>
+                </div>
+              </div>
+              <div className={styles.mappingFormRow}>
+                <div className={styles.mappingField}>
+                  <label>Target type</label>
+                  <div className={styles.mappingRadioGroup}>
+                    <label className={styles.mappingRadioLabel}>
+                      <input
+                        type="radio"
+                        name="form-target-kind"
+                        checked={formTargetKind === "group"}
+                        onChange={() => setFormTargetKind("group")}
+                      />
+                      Group
+                    </label>
+                    <label className={styles.mappingRadioLabel}>
+                      <input
+                        type="radio"
+                        name="form-target-kind"
+                        checked={formTargetKind === "machine"}
+                        onChange={() => setFormTargetKind("machine")}
+                      />
+                      Machine
+                    </label>
+                  </div>
+                </div>
+                <div className={styles.mappingField}>
+                  <label>{formTargetKind === "group" ? "Sensorfact group" : "Sensorfact machine"}</label>
+                  {formTargetKind === "group" ? (
+                    <select
+                      className={styles.mappingSelect}
+                      value={formGroupId}
+                      onChange={(e) => setFormGroupId(e.target.value)}
+                    >
+                      <option value="">Select…</option>
+                      {groups.map((g) => (
+                        <option key={g.id} value={g.id}>
+                          {g.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <select
+                      className={styles.mappingSelect}
+                      value={formMachineId}
+                      onChange={(e) => setFormMachineId(e.target.value)}
+                    >
+                      <option value="">Select…</option>
+                      {machines.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {machineLabel(m)}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.mappingAddButton}
+                disabled={
+                  adding ||
+                  !formFl ||
+                  !(formTargetKind === "group" ? formGroupId : formMachineId)
+                }
+                onClick={handleFormSave}
+              >
+                {adding ? "Saving…" : "Save mapping"}
+              </button>
+            </div>
+
+            <h3 className={styles.mappingFormHeading}>Configured mappings</h3>
+            <div className={styles.mappingTableWrap}>
+              <table className={styles.mappingTable}>
+                <thead>
                   <tr>
-                    <td colSpan={3} style={{ color: "#666" }}>
-                      No configured mappings yet. Use the form above to assign a Sensorfact group or machine.
-                    </td>
+                    <th>Stored key</th>
+                    <th>Sensorfact target</th>
+                    <th></th>
                   </tr>
-                ) : (
-                  mappings.map((row) => (
-                    <MappingRowEditor
-                      key={row.sapMachineId}
-                      row={row}
-                      groups={groups}
-                      machines={machines}
-                      onDone={() => refresh()}
-                      onError={(msg) => setFormError(msg)}
-                    />
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+                </thead>
+                <tbody>
+                  {mappings.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} style={{ color: "#666" }}>
+                        No configured mappings yet. Use the form above to assign a Sensorfact group or machine.
+                      </td>
+                    </tr>
+                  ) : (
+                    mappings.map((row) => (
+                      <MappingRowEditor
+                        key={row.sapMachineId}
+                        row={row}
+                        groups={groups}
+                        machines={machines}
+                        onDone={() => refresh()}
+                        onError={(msg) => setFormError(msg)}
+                      />
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -20,5 +20,5 @@ export default async function Settings() {
 
 async function getUsersToApprove(selfId: string) {
     const result = await pool.query('SELECT * FROM "user" WHERE id != $1 ORDER BY approved ASC, admin DESC', [selfId]);
-    return result.rows.map((row) => ({ email: row.email, id: row.id, admin: row.admin, approved: row.approved }));
+    return result.rows.map((row) => ({ name: row.name, email: row.email, id: row.id, admin: row.admin, approved: row.approved }));
 }
