@@ -42,9 +42,11 @@ main {
 }
 
 * {
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: #a9aeb5 transparent; 
 }
 
 *::-webkit-scrollbar {
-    display: none;
+    width: 6px;
+    height: 12px;
 }

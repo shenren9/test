@@ -13,7 +13,7 @@
   }
   
   .desktop-sidebar {
-    @apply col-start-1 row-span-2 bg-white rounded-[20px] p-5 flex flex-col overflow-y-auto w-[200px] shrink-0;
+    @apply col-start-1 row-span-2 bg-white rounded-[20px] p-5 flex flex-col overflow-hidden w-[200px] shrink-0;
   }
   
   .machine-group {

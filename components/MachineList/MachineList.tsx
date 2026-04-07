@@ -155,7 +155,9 @@ export const MachineList = ({
         )}
       </div>
       <aside className="desktop-sidebar hidden md:flex">
-        {groupsContent}
+        <div className="flex-1 overflow-y-auto pr-2 w-full flex flex-col min-h-0">
+          {groupsContent}
+        </div>
       </aside>
     </>
   );

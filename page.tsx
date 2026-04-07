@@ -107,14 +107,20 @@ async function getModelData() {
     LIMIT 1
   `;
   try {
-    const result = await pool.query(query);
+const result = await pool.query(query);
     const row = result.rows[0];
-
     if (!row) return null;
-
-    const mins = Date.now() - new Date(row.created_at).getTime(); 
-    const daysElapsed = Math.round((mins / (1000 * 60 * 60 * 24)) * 100) / 100;
-    return daysElapsed;
+    const diffMs = Date.now() - new Date(row.created_at).getTime(); 
+    const totalMins = Math.floor(diffMs / (1000 * 60));
+    const days = Math.floor(totalMins / (60 * 24));
+    const hours = Math.floor((totalMins % (60 * 24)) / 60);
+    const mins = totalMins % 60;
+    const parts = [];
+    
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (mins > 0 || parts.length === 0) parts.push(`${mins}m`);
+    return parts.join(' ');
   } catch (err) {
     console.error("GetModelData error:", err);
     return null;
@@ -161,8 +167,8 @@ export default async function Dashboard() {
                 <span className="stat-detail">{upcomingAlert ? `${upcomingAlert.machine_name} : ${upcomingAlert.description}` : 'No alerts'}</span>
               </div>
               <div className="stat-box">
-                <span className="stat-label">Days Since Last Train</span>
-                <span className="stat-value">{modelTrained !== null ? `${modelTrained}d` : '-'}</span>
+                <span className="stat-label">Time Since Last Train</span>
+                <span className="stat-value">{modelTrained !== null ? modelTrained : '-'}</span>
               </div>
             </div>
             <div className="overview-chart">
