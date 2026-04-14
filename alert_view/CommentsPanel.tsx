@@ -59,8 +59,15 @@ export function CommentsPanel({
       setCommentLoading(false);
     })();
 
+    const interval = setInterval(async () => {
+      const res = await fetchComments(predictionId);
+      if (cancelled) return;
+      if (res.ok) setComments(res.data);
+    }, 3000);
+
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
   }, [predictionId]);
 

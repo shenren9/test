@@ -5,7 +5,7 @@ import { LogOutButton } from "../components/LogOutButton"
 import { ImportButton } from "../components/ImportButton";
 import { approveUser, deleteUser, demoteUser, promoteUser } from "./actions";
 import { SapSensorfactMappingSection } from "./SapSensorfactMappingSection";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { handleSubscribeAction, deletePushSubscriptionAction, getDevicePushSubscription } from "@/app/actions/notifications";
@@ -138,6 +138,8 @@ export default function SettingsClient({
   const router = useRouter();
 
   const [retrainStatus, setRetrainStatus] = useState<"idle" | "triggered" | "error">("idle");
+  const retrainStatusRef = useRef(retrainStatus);
+  retrainStatusRef.current = retrainStatus;
   const [lastModel, setLastModel] = useState<{ name: string; created_at: string } | null>(null);
   const [trainingRun, setTrainingRun] = useState<{
     status: string;
@@ -195,10 +197,12 @@ export default function SettingsClient({
           setLastModel(modelRes.models[0]);
         }
         if (trainingRes.ok && trainingRes.run) {
-          setTrainingRun(trainingRes.run);
-          if (trainingRes.run.status === "running" || trainingRes.run.status === "pending") {
+          const run = trainingRes.run;
+          if (run.status === "running" || run.status === "pending") {
+            setTrainingRun(run);
             setRetrainStatus("triggered");
-          } else {
+          } else if (retrainStatusRef.current !== "triggered") {
+            setTrainingRun(run);
             setRetrainStatus("idle");
           }
         }
@@ -306,11 +310,22 @@ export default function SettingsClient({
 
   const handleRetrain = async () => {
     setRetrainStatus("triggered");
+    setTrainingRun({
+      status: "running",
+      total_tasks: trainingRun?.total_tasks ?? 0,
+      completed_tasks: 0,
+      failed_tasks: 0,
+      current_task: null,
+      error: null,
+      started_at: new Date().toISOString(),
+      finished_at: null,
+    });
     try {
       const result = await triggerRetrain();
       if (!result.ok) throw new Error(result.error);
     } catch (err: any) {
       setRetrainStatus("error");
+      setTrainingRun(null);
       alert("Failed to trigger retrain: " + err.message);
     }
   };

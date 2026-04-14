@@ -5,7 +5,7 @@ import { AlertItem } from "../components/AlertItem/AlertItem";
 import { MachineList } from "../components/MachineList/MachineList";
 import { assignAlert, fetchMachinePredictions, setAlertCompleted, setAlertVerificationStatus, unassignAlert } from "@/lib/actions";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertInfo } from "./AlertInfo";
+import { AlertInfo, Prediction } from "./AlertInfo";
 
 import "./alert_view.css";
 
@@ -24,19 +24,6 @@ interface Assignee {
   id: string;
   name: string;
   email: string;
-}
-
-interface Prediction {
-  id: string;
-  kind: string;
-  certainty: number;
-  fail_timestamp: Date;
-  created_at: Date;
-  description: string;
-  machine_name: string;
-  assignees: Assignee[];
-  completed: boolean;
-  verification_status: boolean | null;
 }
 
 interface Props {
@@ -160,7 +147,7 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
       results = results.filter(
         (alert) =>
           alert.machine_name.toLowerCase().includes(query) ||
-          alert.description.toLowerCase().includes(query) ||
+          alert.description.some((d) => d.toLowerCase().includes(query)) ||
           alert.kind.toLowerCase().includes(query)
       );
     }
@@ -216,6 +203,11 @@ export default function AlertViewClient({ groups, machines, allAlerts, currentUs
     const res = await fetchMachinePredictions();
     if (res.ok) setAlertsState(res.data);
   };
+
+  useEffect(() => {
+    const interval = setInterval(reloadAlerts, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleAlertClick = (alertId: string) => {
     setSelectedAlertId(alertId);

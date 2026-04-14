@@ -2,17 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AlertItem } from "@/app/components/AlertItem/AlertItem";
-
-interface Prediction {
-  id: string;
-  kind: string;
-  certainty: number;
-  fail_timestamp: Date;
-  created_at: Date;
-  description: string;
-  machine_name: string;
-  completed: boolean;
-}
+import { Prediction } from "@/app/alert_view/AlertInfo";
 
 export default function DashboardAlertsList({ alerts }: { alerts: Prediction[] }) {
   const [showIncomplete, setShowIncomplete] = useState(true);

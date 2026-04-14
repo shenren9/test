@@ -164,7 +164,7 @@ export default async function Dashboard() {
               <div className="stat-box">
                 <span className="stat-label">Next Failure</span>
                 <span className="stat-value">{daysUntilNextAlert !== null ? `${daysUntilNextAlert}d` : '-'}</span>
-                <span className="stat-detail">{upcomingAlert ? `${upcomingAlert.machine_name} : ${upcomingAlert.description}` : 'No alerts'}</span>
+                <span className="stat-detail">{upcomingAlert ? `${upcomingAlert.machine_name} : ${upcomingAlert.description[0] ?? "No description available"}` : 'No alerts'}</span>
               </div>
               <div className="stat-box">
                 <span className="stat-label">Time Since Last Train</span>

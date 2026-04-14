@@ -10,7 +10,11 @@
 }
 
 .machine-sidebar {
-    @apply m-6 md:m-8 md:mr-0 z-50 overflow-y-auto;
+    @apply m-6 md:m-8 md:mr-0 z-50 flex flex-col min-h-0;
+}
+
+.machine-sidebar .desktop-sidebar {
+    @apply flex-1 min-h-0;
 }
 
 .nav-section {
@@ -31,6 +35,7 @@
 
 .machine-content {
     @apply flex-1 p-8 flex flex-col gap-6 overflow-y-auto;
+    scrollbar-width: none;
 }
 
 .content-top-row {
@@ -167,10 +172,6 @@
     .machine-sidebar {
         @apply w-full m-0 p-4 h-auto max-h-none overflow-visible relative;
         z-index: 50;
-    }
-
-    .machine-sidebar * {
-        @apply overflow-visible;
     }
 
     .machine-content {

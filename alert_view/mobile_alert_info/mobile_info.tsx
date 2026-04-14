@@ -3,28 +3,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {fetchMachinePredictions, assignAlert, unassignAlert, setAlertCompleted, setAlertVerificationStatus,} from "@/lib/actions";
-import { AlertInfo } from "../AlertInfo";
+import { AlertInfo, Prediction } from "../AlertInfo";
 import "../alert_view.css";
-
-interface Assignee {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface Prediction {
-  id: string;
-  kind: string;
-  certainty: number;
-  fail_timestamp: Date;
-  created_at: Date;
-  description: string;
-  machine_name: string;
-  assignees: Assignee[];
-  completed: boolean;
-  verification_status: boolean | null;
-}
-
 
 
 interface MobileAlertInfoProps {

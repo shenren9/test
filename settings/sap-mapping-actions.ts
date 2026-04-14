@@ -43,9 +43,9 @@ export async function listSapSensorfactMappingData(): Promise<ListSapSensorfactM
   try {
     const [flRes, groupsRes, machinesRes, mapRes] = await Promise.all([
       pool.query<{ fl: string }>(
-        `SELECT DISTINCT TRIM(data->>'Functional Location') AS fl
+        `SELECT DISTINCT TRIM(data->>'Functional Loc.') AS fl
          FROM sap
-         WHERE TRIM(COALESCE(data->>'Functional Location', '')) <> ''
+         WHERE TRIM(COALESCE(data->>'Functional Loc.', '')) <> ''
          ORDER BY fl`
       ),
       pool.query<{ id: string; name: string }>(

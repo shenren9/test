@@ -7,7 +7,7 @@ import {useState, useEffect} from 'react';
 interface AlertItemProps {
   id: string;
   machineName: string;
-  fault: string;
+  fault: string[];
   severity: "Y1" | "Y2" | "Spike";
   percentage: number;
   created: Date;
@@ -87,7 +87,7 @@ export const AlertItem = ({ id, machineName, fault, severity, percentage, create
           </div>
         </div>
 
-        <p className="fault-text">{fault}</p>
+        <p className="fault-text"><b>Probably: </b>{fault[0]}</p>
 
         <div className="stats-container">
           <div className="stats-row">

@@ -9,13 +9,13 @@ interface Assignee {
   email: string;
 }
 
-interface Prediction {
+export interface Prediction {
   id: string;
   kind: string;
   certainty: number;
   fail_timestamp: Date;
   created_at: Date;
-  description: string;
+  description: string[];
   machine_name: string;
   assignees: Assignee[];
   completed: boolean;
@@ -74,7 +74,7 @@ export function AlertInfo({
     <div className="space-y-4 text-[#333]">
       <div>
         <h4 className="text-[1.1rem] font-bold text-[#2b5a7a] leading-tight">
-          {selectedAlert.description} - {selectedAlert.machine_name}
+          {selectedAlert.machine_name}
         </h4>
         <p className="text-[0.75rem] text-[#999] mt-1">
           Created: {hydrated ? new Date(selectedAlert.created_at).toLocaleString() : "N/A"}
@@ -146,6 +146,14 @@ export function AlertInfo({
           </button>
         )}
       </div>
+
+      <h4 className="text-[1.1rem] font-bold text-[#2b5a7a] leading-tight">Likely Breakdown Causes</h4>
+      <p>These are the descriptions of the most similar SAP entries</p>
+      <ul className="list-disc ml-5 mt-2 space-y-1">
+        {selectedAlert.description.map((item, index) => (
+          <li key={index} className="text-sm text-gray-700">{item}</li>
+        ))}
+      </ul>
 
       <CommentsPanel
         predictionId={selectedAlert.id}

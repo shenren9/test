@@ -218,8 +218,8 @@ export default function MachinePageClient({
                         </div>
                         <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 flex flex-col justify-center min-h-[90px]">
                           <span className="text-xs text-gray-500 font-semibold mb-1">Detected Fault</span>
-                          <span className="text-sm font-medium text-gray-800 line-clamp-2" title={topPrediction.description}>
-                            {topPrediction.description}
+                          <span className="text-sm font-medium text-gray-800 line-clamp-2" title={topPrediction.description[0] ?? "No description available"}>
+                            {topPrediction.description[0] ?? "No description available"}
                           </span>
                           <span className="text-xs text-[#9593FC] font-semibold mt-1">
                             Severity: {topPrediction.kind}
@@ -258,7 +258,7 @@ export default function MachinePageClient({
                         <tr key={p.id}>
                           <td>{hydrated ? new Date(p.created_at).toLocaleDateString() : '-/-/----'}</td>
                           <td>{hydrated ? new Date(p.created_at).toLocaleTimeString() : '-:--:--'}</td>
-                          <td>{p.description}</td>
+                          <td>{p.description[0] ?? "No description available"}</td>
                           <td>{p.kind}</td>
                           <td>{Math.round(p.certainty * 100)}%</td>
                         </tr>
