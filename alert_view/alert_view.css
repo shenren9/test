@@ -128,7 +128,7 @@
 
     .alert-grid-layout {
         @apply grid-cols-1 gap-5 p-4 pb-16;
-        grid-template-rows: auto 1fr;
+        grid-template-rows: auto auto 1fr;
         height: 100%;
         overflow: hidden;
     }

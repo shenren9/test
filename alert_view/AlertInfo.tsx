@@ -150,7 +150,8 @@ export function AlertInfo({
       <h4 className="text-[1.1rem] font-bold text-[#2b5a7a] leading-tight">Likely Breakdown Causes</h4>
       <p>These are the descriptions of the most similar SAP entries</p>
       <ul className="list-disc ml-5 mt-2 space-y-1">
-        {selectedAlert.description.map((item, index) => (
+        {(Array.isArray(selectedAlert.description) ? selectedAlert.description : [selectedAlert.description])
+          .map((item, index) => (
           <li key={index} className="text-sm text-gray-700">{item}</li>
         ))}
       </ul>

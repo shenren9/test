@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { GrFormViewHide } from "react-icons/gr";
 import { FaRegEye } from "react-icons/fa";
 import "./MachineList.css";
@@ -46,12 +46,24 @@ export const MachineList = ({
   onSelectMachine,
 }: MachineListProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [orderedGroups, setOrderedGroups] = useState<Group[]>(groups);
 
   useEffect(() => {
-    setOrderedGroups(loadGroupOrder(groups));
-  }, [groups]);
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
     
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
 
   const moveGroup = (index: number, direction: "up" | "down") => {
     const newGroups = [...orderedGroups];
@@ -143,7 +155,7 @@ export const MachineList = ({
 
   return (
     <>
-      <div className="mobile-container md:hidden">
+      <div className="mobile-container md:hidden" ref={dropdownRef}>
         <button onClick={() => setIsOpen(!isOpen)} className="mobile-dropdown-button">
           <span>{selectedMachines.length > 0 ? selectedMachines.join(', ') : "Select machines"}</span>
           <span>{isOpen ? "▲" : "▼"}</span>
